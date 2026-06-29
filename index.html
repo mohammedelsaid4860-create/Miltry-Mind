@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Military Command - Final Admin Pro</title>
+    <style>
+        body { background: #05060a; color: #fff; font-family: 'Cairo', sans-serif; padding: 20px; }
+        .controls { display: flex; justify-content: space-between; align-items: center; background: #1a1d1a; padding: 15px; border-radius: 8px; border: 1px solid #4b5320; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; background: #0c0d0c; border: 1px solid #333; }
+        th, td { padding: 10px; border: 1px solid #333; text-align: center; font-size: 14px; }
+        th { background: #4b5320; color: #ffd700; }
+        
+        /* الحقول القابلة للتعديل */
+        .edit-input { background: #000; color: #fff; border: 1px solid #555; padding: 5px; width: 80px; text-align: center; }
+        
+        /* الحقول المقفولة (للقراءة فقط) */
+        .read-only { color: #888; font-family: monospace; font-size: 12px; background: #111; padding: 5px; border: none; width: 100%; }
+        
+        button { cursor: pointer; padding: 6px 12px; border: none; border-radius: 4px; font-weight: bold; }
+        .btn-save { background: #27ae60; color: white; }
+        .btn-del { background: #b32424; color: white; }
+        .btn-season { background: #ffd700; color: #000; padding: 10px 20px; }
+    </style>
+</head>
+<body>
+
+    <h1>غرفة قيادة العمليات (الإصدار النهائي)</h1>
+    
+    <div class="controls">
+        <div><strong>نظام المراقبة المركزية</strong></div>
+        <button class="btn-season" onclick="resetSeason()">⚠️ بدء موسم جديد (تصفير الكل)</button>
+    </div>
+
+    <table id="usersTable">
+        <thead>
+            <tr>
+                <th>المعرف العسكري (UID)</th>
+                <th>الاسم</th>
+                <th>الإيميل</th>
+                <th>النقاط</th>
+                <th>المجندين</th>
+                <th>إجراءات</th>
+            </tr>
+        </thead>
+        <tbody id="tbody">
+            </tbody>
+    </table>
+
+<script type="module">
+    // --- 1. نظام الحماية (البوابة) ---
+    const adminPass = "1234"; // غيّر هذا الرقم إلى كلمة سرك الخاصة
+    const input = prompt("أدخل رمز الوصول العسكري:");
+    if (input !== adminPass) {
+        document.body.innerHTML = "<h1 style='color:red; text-align:center; padding-top:100px;'>وصول مرفوض! التسلل ممنوع.</h1>";
+        throw new Error("ACCESS_DENIED");
+    }
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getDatabase, ref, get, update, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+    // --- بيانات مشروعك ---
+    const firebaseConfig = {
+        databaseURL: "https://miltray2-321f3-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    async function loadData() {
+        const tbody = document.getElementById('tbody');
+        tbody.innerHTML = '<tr><td colspan="6">جاري الاتصال بقاعدة البيانات...</td></tr>';
+        
+        const snapshot = await get(ref(db, 'users'));
+        tbody.innerHTML = '';
+        
+        if (!snapshot.exists()) {
+            tbody.innerHTML = '<tr><td colspan="6">لا يوجد مجندين حالياً.</td></tr>';
+            return;
+        }
+
+        snapshot.forEach((child) => {
+            const uid = child.key;
+            const u = child.val();
+            const tr = document.createElement('tr');
+            
+            tr.innerHTML = `
+                <td><input class="read-only" value="${uid}" readonly></td>
+                <td><input class="read-only" value="${u.name || 'غير معروف'}" readonly></td>
+                <td><input class="read-only" value="${u.email || 'غير معروف'}" readonly></td>
+                <td><input type="number" class="edit-input" id="p-${uid}" value="${u.points || 0}"></td>
+                <td><input type="number" class="edit-input" id="r-${uid}" value="${u.recruitsCount || 0}"></td>
+                <td>
+                    <button class="btn-save" onclick="saveUser('${uid}')">حفظ</button>
+                    <button class="btn-del" onclick="deleteUser('${uid}')">حذف</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // حفظ التعديلات (النقاط والمجندين فقط)
+    window.saveUser = async (uid) => {
+        const pts = parseInt(document.getElementById(`p-${uid}`).value);
+        const recruits = parseInt(document.getElementById(`r-${uid}`).value);
+        
+        await update(ref(db, `users/${uid}`), { 
+            points: pts, 
+            recruitsCount: recruits
+        });
+        alert("تم تحديث بيانات المجند بنجاح.");
+    };
+
+    // حذف مستخدم
+    window.deleteUser = async (uid) => {
+        if(confirm("تنبيه: سيتم مسح بيانات المجند نهائياً من قاعدة البيانات!")) {
+            await remove(ref(db, `users/${uid}`));
+            loadData();
+        }
+    };
+
+    // تصفير الموسم
+    window.resetSeason = async () => {
+        if(!confirm("⚠️ تحذير: سيتم تصفير النقاط والمجندين لكل المستخدمين! لا يمكن التراجع.")) return;
+        
+        const snapshot = await get(ref(db, 'users'));
+        const updates = {};
+        snapshot.forEach(c => {
+            updates[`users/${c.key}/points`] = 0;
+            updates[`users/${c.key}/recruitsCount`] = 0;
+        });
+        
+        await update(ref(db), updates);
+        alert("تم بدء موسم جديد بنجاح!");
+        loadData();
+    };
+
+    loadData();
+</script>
+</body>
+</html>
