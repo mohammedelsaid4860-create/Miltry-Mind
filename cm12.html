@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MILITARY COMMAND - ELITE UI</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root { --weapon-color: #4b5320; --bg: #05060a; --accent: #ffd700; --weapon-bg: none; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        
+        body, html { 
+            margin: 0; padding: 0; 
+            background-color: var(--bg); 
+            background-image: var(--weapon-bg);
+            color: #fff; font-family: 'Cairo', sans-serif; height: 100vh; overflow: hidden; transition: background 0.5s ease; 
+        }
+
+        .svg-icon { display: inline-block; width: 1em; height: 1em; stroke-width: 2; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+
+        .view { display: none; height: 100vh; overflow-y: auto; padding-bottom: 150px; animation: fadeIn 0.4s ease; }
+        .view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        .hud { background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); padding: 15px 20px; border-bottom: 2px solid var(--weapon-color); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        .stamina-bar { height: 4px; background: #222; margin-top: 10px; border-radius: 2px; overflow: hidden; }
+        #stamina-fill { height: 100%; background: linear-gradient(90deg, #2ecc71, #27ae60); width: 100%; transition: 0.5s; }
+
+        .auth-container { padding: 30px 20px; text-align: center; }
+        .auth-logo { font-size: 50px; color: var(--accent); text-shadow: 0 0 20px rgba(255,215,0,0.3); margin-bottom: 10px; display: flex; justify-content: center; }
+        .input-group { position: relative; margin-bottom: 15px; }
+        .input-group .input-icon { position: absolute; right: 15px; top: 16px; color: #888; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+        .input-group input { width: 100%; padding: 15px 45px 15px 15px; background: #111; border: 1px solid #333; color: #fff; border-radius: 12px; font-family: 'Cairo'; transition: 0.3s; }
+        .input-group input:focus { border-color: var(--weapon-color); box-shadow: 0 0 10px rgba(75, 83, 32, 0.5); }
+        
+        .weapon-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 20px 0; }
+        .w-card { background: #111; border: 1px solid #333; border-radius: 12px; padding: 15px 5px; text-align: center; cursor: pointer; transition: 0.3s; color: #666; display: flex; flex-direction: column; align-items: center; }
+        .w-card .icon-holder { font-size: 22px; margin-bottom: 5px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+        .w-card span { font-size: 10px; display: block; font-weight: bold; color: #888; width: 100%; }
+        .w-card.selected { border-color: var(--weapon-color); background: rgba(255,255,255,0.05); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.5); color: var(--weapon-color); }
+        .w-card.selected span { color: var(--weapon-color); text-shadow: 0 0 10px var(--weapon-color); }
+
+        .btn-m { width: 100%; padding: 18px; border: none; border-radius: 12px; background: linear-gradient(45deg, var(--weapon-color), #222); color: #fff; font-weight: 900; font-size: 16px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.4); transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-m:active { transform: scale(0.98); }
+
+        .profile-wrapper { padding: 20px; }
+        .id-card { background: #111; border-radius: 20px; overflow: hidden; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; }
+        .id-header { background: linear-gradient(135deg, var(--weapon-color), #000); padding: 30px 20px; text-align: center; position: relative; }
+        .id-header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: var(--accent); }
+        .id-avatar { width: 90px; height: 90px; background: var(--bg); border: 4px solid var(--accent); border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; color: var(--weapon-color); box-shadow: 0 0 20px rgba(255,215,0,0.3); font-size: 44px; }
+        
+        .id-body { padding: 20px; background: url('https://www.transparenttextures.com/patterns/cubes.png'); }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px dashed #333; padding-bottom: 10px; }
+        .info-label { color: #888; font-size: 12px; }
+        .info-value { font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 5px; }
+        
+        .rank-progress { width: 100%; height: 14px; background: #000; border-radius: 7px; margin-top: 10px; border: 1px solid #333; overflow: hidden; position: relative; }
+        #rank-fill { height: 100%; background: linear-gradient(90deg, var(--weapon-color), var(--accent)); width: 0%; transition: width 1.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+        .map-grid { padding: 40px 20px; display: flex; flex-direction: column; align-items: center; gap: 40px; background-image: radial-gradient(rgba(255,255,255,0.05) 2px, transparent 2px); background-size: 30px 30px; }
+        .node { width: 75px; height: 75px; background: #111; border: 3px solid #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; color: #888; transition: 0.3s; font-family: 'Orbitron'; font-size: 18px; cursor: pointer; }
+        .node::before { content: ''; position: absolute; top: 72px; width: 2px; height: 40px; background: #333; }
+        .node:last-child::before { display: none; }
+        .node.active { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 25px rgba(255,215,0,0.4); animation: pulseMap 1.5s infinite; background: #222; }
+        .node.done { border-color: #2ecc71; background: #0a2e1a; color: #2ecc71; }
+        @keyframes pulseMap { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        .timer-screen { width: 180px; height: 180px; margin: 20px auto; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Orbitron'; font-size: 55px; color: var(--accent); text-shadow: 0 0 15px rgba(255,215,0,0.5); }
+        .timer-screen svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: rotate(-90deg); filter: drop-shadow(0 0 10px rgba(0,0,0,0.8)); }
+        .timer-label { font-size: 14px; color: #888; font-family: 'Cairo'; margin-top: -10px; }
+        
+        .help-box { display: none; background: #0a0b10; border: 2px solid var(--weapon-color); border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: right; box-shadow: inset 0 0 15px rgba(0,0,0,0.5); }
+        .help-box h3 { color: var(--accent); margin-top: 0; font-size: 15px; border-bottom: 1px dashed #333; padding-bottom: 10px; font-family: 'Cairo'; display: flex; align-items: center; gap: 8px; }
+        .help-box p { font-size: 14px; color: #fff; line-height: 1.8; margin: 0; font-weight: bold; white-space: pre-line; }
+
+        .video-box { display: none; background: #111; border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 20px; }
+        .video-box iframe { width: 100%; height: 200px; border-radius: 8px; border: none; background: #000; }
+
+        nav { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.95); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #222; z-index: 1000; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+        nav .nav-item { display: flex; flex-direction: column; align-items: center; color: #555; cursor: pointer; transition: 0.3s; }
+        nav .nav-item .icon-holder { font-size: 22px; width: 22px; height: 22px; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; }
+        nav .nav-item span { font-size: 10px; font-weight: bold; }
+        nav .nav-item.active { color: var(--accent); }
+
+        .ex-progress-container { margin-bottom: 20px; }
+        .ex-bar { width: 100%; height: 6px; background: #111; border-radius: 3px; border: 1px solid #333; overflow: hidden; }
+        #ex-progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--weapon-color), var(--accent)); transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; backdrop-filter: blur(8px); align-items: center; justify-content: center; }
+        .resume-card { width: 85%; max-width: 350px; background: #0a0b10; border: 2px solid var(--weapon-color); border-radius: 20px; padding: 25px; text-align: center; box-shadow: 0 0 30px rgba(0,0,0,1), inset 0 0 15px var(--weapon-color); animation: modalSlide 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+        @keyframes modalSlide { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-header .icon-holder { font-size: 40px; color: var(--accent); margin-bottom: 15px; display: flex; justify-content: center; }
+        .modal-header h3 { font-family: 'Orbitron'; margin: 0; font-size: 18px; color: #fff; }
+        .modal-body { margin: 20px 0; border-top: 1px solid #222; border-bottom: 1px solid #222; padding: 15px 0; }
+
+        /* Connection Status Indicator */
+        #conn-status { position: fixed; top: 15px; left: 15px; z-index: 2000; background: rgba(0,0,0,0.85); padding: 5px 12px; border-radius: 20px; border: 1px solid #333; display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: bold; transition: opacity 0.5s; }
+        .conn-icon-holder { display: flex; align-items: center; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div id="conn-status" style="display:none;">
+        <div class="conn-icon-holder" id="conn-icon"></div>
+        <span id="conn-text"></span>
+    </div>
+
+    <div id="hud" class="hud" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div id="h-icon" style="color:var(--accent); font-size:24px; display:flex;"></div>
+                <div>
+                    <div id="h-rank" style="font-weight:900; color:#fff;">--</div>
+                    <div id="h-weapon" style="font-size:11px; color:var(--accent);">--</div>
+                </div>
+            </div>
+            <div style="font-family:'Orbitron'; font-size:18px; color:#fff; background:#222; padding:5px 15px; border-radius:20px; border:1px solid #444;">??<span id="h-pts">0</span></div>
+        </div>
+        <div class="stamina-bar"><div id="stamina-fill"></div></div>
+    </div>
+
+    <div id="view-auth" class="view">
+        <div class="auth-container">
+            <div class="auth-logo" id="auth-main-logo"></div>
+            <h2 style="font-family:'Orbitron'; margin:0 0 20px; color:#fff; letter-spacing:2px;">MILITARY<span style="color:var(--accent);">OS</span></h2>
+            
+            <div id="reg-fields">
+                <div class="input-group">
+                    <span class="input-icon" id="input-user-icon"></span>
+                    <input type="text" id="reg-name" placeholder="الاسم العسكري بالكامل">
+                </div>
+                
+                <p style="text-align:right; font-size:12px; color:#888; margin-bottom:5px;">حدد السلاح القتالي:</p>
+                <div class="weapon-grid" id="weapon-selection-grid"></div>
+            </div>
+
+            <button class="btn-m" onclick="handleAuth()" id="auth-btn">بدء الخدمة العسكرية</button>
+        </div>
+    </div>
+
+    <div id="view-map" class="view">
+        <div class="map-grid" id="map-cont"></div>
+    </div>
+
+    <div id="view-workout" class="view">
+        <div style="padding:20px; text-align:center;">
+            
+            <div class="ex-progress-container">
+                <div style="display: flex; justify-content: space-between; font-size: 11px; color: #888; margin-bottom: 5px;">
+                    <span>التقدم في المهمة</span>
+                    <span id="ex-progress-pct" style="color: var(--accent); font-weight: bold;">0%</span>
+                </div>
+                <div class="ex-bar">
+                    <div id="ex-progress-fill"></div>
+                </div>
+            </div>
+
+            <div style="background:#111; padding:10px; border-radius:10px; border:1px solid #333; margin-bottom:20px;">
+                <h4 id="wo-title" style="color:#888; margin:0; font-size:14px;">مهمة قتالية</h4>
+                <h2 id="ex-name" style="margin:5px 0; color:#fff;">--</h2>
+            </div>
+            
+            <div class="timer-screen">
+                <svg viewBox="0 0 180 180">
+                    <circle cx="90" cy="90" r="80" fill="#111" stroke="#222" stroke-width="8"></circle>
+                    <circle id="timer-progress" cx="90" cy="90" r="80" fill="none" stroke="var(--accent)" stroke-width="8" stroke-dasharray="503" stroke-dashoffset="0" stroke-linecap="round" style="transition: stroke-dashoffset 1s linear;"></circle>
+                </svg>
+                <div style="position:relative; z-index:2; text-align:center;">
+                    <span id="timer-val" style="display:block; line-height:1;">00</span>
+                    <span class="timer-label" id="timer-type" style="display:block; margin-top:-5px;">وقت</span>
+                </div>
+            </div>
+            
+            <div style="display:flex; justify-content:center; gap:5px; margin-bottom:15px;">
+                <button class="btn-m" style="width:32%; background:#222; padding:12px 5px; font-size:12px;" onclick="toggleHelp()"><span id="ic-alert" style="margin-left:5px;"></span> تنبيه</button>
+                <button class="btn-m" style="width:32%; background:#222; padding:12px 5px; font-size:12px;" onclick="toggleVideo()"><span id="ic-video" style="margin-left:5px;"></span> فيديو</button>
+                <button class="btn-m" style="width:32%; background:#222; padding:12px 5px; font-size:12px;" onclick="goToDetailedHelp()"><span id="ic-details" style="margin-left:5px;"></span> مفصل</button>
+            </div>
+
+            <div id="help-box" class="help-box">
+                <h3><span id="ic-clip"></span> خطوات التنفيذ الصحيحة:</h3>
+                <p id="help-desc"></p>
+                <button class="btn-m" style="margin-top:15px; padding:12px; background:var(--weapon-color);" onclick="resumeWorkout()">علم، تنفيذ!</button>
+            </div>
+
+            <div id="video-box" class="video-box">
+                <iframe id="vid-player" src="" allowfullscreen></iframe>
+                <button class="btn-m" style="margin-top:15px; padding:12px; background:var(--weapon-color);" onclick="resumeWorkout()">فهمت، متابعة التدريب</button>
+            </div>
+
+            <button class="btn-m" id="btn-main" onclick="handleStep()">بدء التنفيذ</button>
+            
+            <div id="rest-ctrls" style="display:none; gap:10px;">
+                <button class="btn-m" style="background:#333; flex:1;" onclick="add15Sec()"><span id="ic-plus"></span> 15 ثانية</button>
+                <button class="btn-m" style="background:transparent; border:1px solid #555; color:#888; flex:1;" onclick="skipRest()">تخطي</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-reward" class="view">
+        <div style="padding:40px 20px; text-align:center;">
+            <div id="reward-main-icon" style="margin-bottom:20px; font-size: 50px; display: flex; justify-content: center;"></div>
+            <h2 style="font-family:'Orbitron'; color:#fff;">اكتملت المهمة!</h2>
+            <p style="color:#aaa; font-size:14px; margin-bottom:30px;">شاهد هذا الإعلان العسكري القصير لحفظ تقدمك والحصول على نقاط المكافأة كاملة.</p>
+            
+            <button class="btn-m" id="ad-btn" onclick="showRewardedAd()"><span id="ic-ad-btn"></span> شاهد الإعلان للحصول على المكافأة</button>
+        </div>
+    </div>
+
+    <div id="view-profile" class="view">
+        <div class="profile-wrapper">
+            <h3 style="font-family:'Orbitron'; text-align:center; color:#555; margin-top:0;">MILITARY ID</h3>
+            
+            <div class="id-card">
+                <div class="id-header">
+                    <div class="id-avatar" id="p-icon"></div>
+                    <h2 id="p-name" style="margin:0; font-size:22px;">--</h2>
+                    <p id="p-rank" style="color:var(--accent); font-weight:900; margin:5px 0 0; font-size:18px;">--</p>
+                </div>
+                <div class="id-body">
+                    <div class="info-row">
+                        <span class="info-label">السلاح التابع له</span>
+                        <span class="info-value" id="p-weapon" style="color:var(--weapon-color);">--</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">النقاط القتالية المكتسبة</span>
+                        <span class="info-value"><span id="ic-profile-coins"></span> <span id="p-pts" style="margin-right: 5px;">0</span></span>
+                    </div>
+                    <div class="info-row" style="border:none; margin-bottom:0;">
+                        <span class="info-label">المرحلة الحالية</span>
+                        <span class="info-value" id="p-stage">المهمة 1</span>
+                    </div>
+                    
+                    <div style="margin-top:20px;">
+                        <div style="display:flex; justify-content:space-between; font-size:11px; color:#aaa; margin-bottom:5px;">
+                            <span>التقدم للترقية</span>
+                            <span id="p-pct" style="color:var(--accent); font-weight:bold;">0%</span>
+                        </div>
+                        <div class="rank-progress">
+                            <div id="rank-fill"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-m" style="background:transparent; border:1px solid #555; color:#fff; margin-top:20px; font-size:14px;" onclick="resetProgress()"><span id="ic-reset"></span> إعادة تعيين البيانات لـ "طالب"</button>
+            <button class="btn-m" style="background:linear-gradient(45deg, #c0392b, #8e44ad); margin-top:10px;" onclick="logOut()"><span id="ic-logout"></span> إنهاء الخدمة</button>
+        </div>
+    </div>
+
+    <div id="resume-modal" class="modal-overlay">
+        <div class="resume-card">
+            <div class="modal-header">
+                <div id="ic-modal-radar" class="icon-holder"></div>
+                <h3>تم اكتشاف تقدم سابق</h3>
+            </div>
+            <div class="modal-body">
+                <p>المجند: <span id="res-user-name" style="color:var(--accent);">--</span></p>
+                <p>المهمة رقم: <span id="res-mission-id" style="color:var(--accent);">--</span></p>
+                <p style="font-size: 12px; color: #888; margin-top: 10px;">هل ترغب في استكمال المهمة من حيث توقفت أم البدء من نقطة الصفر؟</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-m" onclick="confirmResume(true)" style="background: var(--weapon-color); margin-bottom: 10px;">
+                    <span id="ic-modal-play"></span> استئناف الخدمة
+                </button>
+                <button class="btn-m" onclick="confirmResume(false)" style="background: transparent; border: 1px solid #444; color: #888;">
+                    <span id="ic-modal-reset"></span> إعادة المهمة
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <nav id="navbar" style="display:none;">
+        <div class="nav-item" onclick="switchView('view-map', this)"><div class="icon-holder" id="ic-nav-map"></div><span>الخريطة</span></div>
+        <div class="nav-item" onclick="switchView('view-profile', this)"><div class="icon-holder" id="ic-nav-profile"></div><span>الهوية</span></div>
+    </nav>
+
+    <script>
+        const SVGS = {
+            crosshairs: `<svg viewBox="0 0 24 24" class="svg-icon"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line></svg>`,
+            shield: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>`,
+            war: `<svg viewBox="0 0 24 24" class="svg-icon"><line x1="6" y1="18" x2="18" y2="18"></line><line x1="6" y1="14" x2="18" y2="14"></line><path d="M6 10l6-6 6 6H6z"></path></svg>`,
+            navy: `<svg viewBox="0 0 24 24" class="svg-icon"><circle cx="12" cy="5" r="3"></circle><line x1="12" y1="8" x2="12" y2="22"></line><path d="M5 15a7 7 0 0 0 14 0"></path></svg>`,
+            air: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M22 2L12 22L9 15L2 12L22 2Z"></path></svg>`,
+            police: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><line x1="12" y1="2" x2="12" y2="22"></line></svg>`,
+            def: `<svg viewBox="0 0 24 24" class="svg-icon"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`,
+            med: `<svg viewBox="0 0 24 24" class="svg-icon"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`,
+            tech: `<svg viewBox="0 0 24 24" class="svg-icon"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line></svg>`,
+            it: `<svg viewBox="0 0 24 24" class="svg-icon"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`,
+            user: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`,
+            bullseye: `<svg viewBox="0 0 24 24" class="svg-icon"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>`,
+            play: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M8 5v14l11-7z"></path></svg>`,
+            list: `<svg viewBox="0 0 24 24" class="svg-icon"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line></svg>`,
+            check: `<svg viewBox="0 0 24 24" class="svg-icon"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
+            plus: `<svg viewBox="0 0 24 24" class="svg-icon"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`,
+            gift: `<svg viewBox="0 0 24 24" class="svg-icon"><rect x="3" y="8" width="18" height="12" rx="2"></rect><line x1="12" y1="8" x2="12" y2="20"></line><line x1="3" y1="12" x2="21" y2="12"></line></svg>`,
+            video: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M23 7l-7 5 7 5V7z"></path><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>`,
+            coins: `<svg viewBox="0 0 24 24" class="svg-icon" style="color:#ffd700;"><circle cx="12" cy="12" r="10"></circle><text x="12" y="16" font-size="12" font-weight="900" text-anchor="middle" fill="#ffd700">$</text></svg>`,
+            rotate: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"></path></svg>`,
+            power: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>`,
+            radar: `<svg viewBox="0 0 24 24" class="svg-icon"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="12" x2="12" y2="2"></line></svg>`,
+            camp: `<svg viewBox="0 0 24 24" class="svg-icon" style="color:#ffd700;"><path d="M12 2L2 22h20L12 2zM12 12v10"></path></svg>`,
+            map: `<svg viewBox="0 0 24 24" class="svg-icon"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon></svg>`,
+            badge: `<svg viewBox="0 0 24 24" class="svg-icon"><rect x="4" y="4" width="16" height="16" rx="2"></rect><circle cx="12" cy="12" r="4"></circle></svg>`,
+            wifi_on: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>`,
+            wifi_off: `<svg viewBox="0 0 24 24" class="svg-icon"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path><path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>`
+        };
+
+        const ONLINES = {
+            crosshairs: "fas fa-crosshairs",
+            shield: "fas fa-shield-alt",
+            war: "fa-solid fa-person-military-rifle",
+            navy: "fa-solid fa-ship",
+            air: "fa-solid fa-jet-fighter",
+            police: "fas fa-user-shield",
+            def: "fas fa-satellite-dish",
+            med: "fa-solid fa-user-doctor",
+            tech: "fas fa-microchip",
+            it: "fas fa-laptop-code",
+            user: "fas fa-user",
+            bullseye: "fas fa-bullseye",
+            play: "fas fa-play",
+            list: "fas fa-list-ul",
+            check: "fas fa-check",
+            plus: "fas fa-plus",
+            gift: "fas fa-gift",
+            video: "fas fa-video",
+            coins: "fas fa-coins",
+            rotate: "fas fa-sync-alt",
+            power: "fas fa-power-off",
+            radar: "fas fa-satellite",
+            camp: "fas fa-campground",
+            map: "fas fa-map-marker-alt",
+            badge: "fas fa-id-badge",
+            wifi_on: "fas fa-wifi",
+            wifi_off: "fas fa-wifi-slash"
+        };
+
+        function getIcon(name) {
+            if (!navigator.onLine) {
+                return SVGS[name] || '';
+            } else {
+                return `<i class="${ONLINES[name]}" style="font-size:inherit; color:inherit;"></i>`;
+            }
+        }
+
+        function setupStaticIcons() {
+            document.getElementById('auth-main-logo').innerHTML = getIcon('crosshairs');
+            document.getElementById('input-user-icon').innerHTML = getIcon('user');
+            document.getElementById('ic-alert').innerHTML = getIcon('bullseye');
+            document.getElementById('ic-video').innerHTML = getIcon('play');
+            document.getElementById('ic-details').innerHTML = getIcon('list');
+            document.getElementById('ic-clip').innerHTML = getIcon('check');
+            document.getElementById('ic-plus').innerHTML = getIcon('plus');
+            document.getElementById('reward-main-icon').innerHTML = getIcon('gift');
+            document.getElementById('ic-ad-btn').innerHTML = getIcon('video');
+            document.getElementById('ic-profile-coins').innerHTML = getIcon('coins');
+            document.getElementById('ic-reset').innerHTML = getIcon('rotate');
+            document.getElementById('ic-logout').innerHTML = getIcon('power');
+            document.getElementById('ic-modal-radar').innerHTML = getIcon('radar');
+            document.getElementById('ic-modal-play').innerHTML = getIcon('play');
+            document.getElementById('ic-modal-reset').innerHTML = getIcon('rotate');
+            document.getElementById('ic-nav-map').innerHTML = getIcon('map');
+            document.getElementById('ic-nav-profile').innerHTML = getIcon('badge');
+
+            const weapons = [
+                {k:'war', n:'حربية'}, {k:'navy', n:'بحرية'}, {k:'air', n:'جوية'}, {k:'police', n:'شرطة'},
+                {k:'def', n:'دفاع جوي'}, {k:'med', n:'طب عسكري'}, {k:'tech', n:'فنية عسكرية'}, {k:'it', n:'تكنولوجيا عسكرية'}
+            ];
+            let gridHtml = '';
+            weapons.forEach(w => {
+                gridHtml += `<div class="w-card ${w.k==='war'?'selected':''}" onclick="updateTheme('${w.k}', this)"><div class="icon-holder">${getIcon(w.k)}</div><span>${w.n}</span></div>`;
+            });
+            document.getElementById('weapon-selection-grid').innerHTML = gridHtml;
+        }
+
+        const ranks = {
+            war: ['طالب','ملازم','نقيب','رائد','مقدم','عقيد','عميد','لواء','فريق أول'],
+            navy: ['طالب','ملازم بحري','نقيب بحري','رائد بحري','مقدم بحري','عقيد بحري','عميد بحري','لواء بحري'],
+            air: ['طالب','ملازم طيار','نقيب طيار','رائد طيار','مقدم طيار','عقيد طيار','عميد طيار','لواء طيار'],
+            police: ['طالب','ملازم شرطة','نقيب شرطة','رائد شرطة','مقدم شرطة','عقيد شرطة','عميد شرطة','لواء شرطة'],
+            def: ['طالب','ملازم دفاع جوي','نقيب دفاع جوي','رائد دفاع جوي','لواء دفاع جوي'],
+            med: ['طالب','ملازم طبيب','نقيب طبيب','رائد طبيب','مقدم طبيب','عقيد طبيب','عميد طبيب','لواء طبيب'],
+            tech: ['طالب ','ملازم مهندس','نقيب مهندس','رائد مهندس','مقدم مهندس','عقيد مهندس','عميد مهندس','لواء مهندس'],
+            it: ['طالب ','ملازم تكنولوجي','نقيب تكنولوجي','رائد تكنولوجي','مقدم تكنولوجي','عقيد تكنولوجي','عميد تكنولوجي','لواء تكنولوجي']
+        };
+
+        const weaponStyles = {
+            war: { n: 'سلاح المشاة', c: '#4b5320', i: 'war', bg: 'repeating-linear-gradient(45deg, rgba(75,83,32,0.05) 0px, rgba(75,83,32,0.05) 10px, transparent 10px, transparent 20px)' },
+            navy: { n: 'القوات البحرية', c: '#1a5276', i: 'navy', bg: 'repeating-radial-gradient(circle at 0 0, transparent 0, rgba(26,82,118,0.1) 15px, transparent 15px, rgba(26,82,118,0.1) 30px)' },
+            air: { n: 'القوات الجوية', c: '#2e86c1', i: 'air', bg: 'linear-gradient(135deg, rgba(46,134,193,0.05) 25%, transparent 25%, transparent 50%, rgba(46,134,193,0.05) 50%, rgba(46,134,193,0.05) 75%, transparent 75%, transparent)' },
+            police: { n: 'هيئة الشرطة', c: '#212f3d', i: 'police', bg: 'linear-gradient(90deg, rgba(255,255,255,0.02) 50%, transparent 50%), linear-gradient(rgba(255,255,255,0.02) 50%, transparent 50%)', bgSize: '20px 20px' },
+            def: { n: 'الدفاع الجوي', c: '#117a65', i: 'def', bg: 'radial-gradient(circle, rgba(17,122,101,0.15) 1px, transparent 1px)', bgSize: '15px 15px' },
+            med: { n: 'الطب العسكري', c: '#c0392b', i: 'med', bg: 'linear-gradient(45deg, rgba(192,57,43,0.05) 25%, transparent 25%, transparent 75%, rgba(192,57,43,0.05) 75%, rgba(192,57,43,0.05)), linear-gradient(-45deg, rgba(192,57,43,0.05) 25%, transparent 25%, transparent 75%, rgba(192,57,43,0.05) 75%, rgba(192,57,43,0.05))', bgSize: '20px 20px' },
+            tech: { n: 'الفنية العسكرية', c: '#7f8c8d', i: 'tech', bg: 'radial-gradient(circle at 50% 50%, rgba(127,140,141,0.1) 2px, transparent 2px)', bgSize: '15px 15px' },
+            it: { n: 'التكنولوجيا العسكرية', c: '#6c5ce7', i: 'it', bg: 'linear-gradient(transparent 50%, rgba(108,92,231,0.05) 50%)', bgSize: '10px 4px' }
+        };
+
+        const dailyWorkouts = {
+            1: [ 
+                {n: "ضغط عسكري واسع", v: 8, t: "rep", sec: "1s", desc: `1. ضع يديك أوسع من كتفيك بقليل.
+2. انزل بصدرك حتى يقترب من الأرض.
+3. ادفع بجسمك للأعلى بقوة مع فرد ذراعك تماماً.`, vid: "https://youtube.com/embed/TaSFAyTXPmo"},
+                {n: "ضغط الألماس (Diamond)", v: 6, t: "rep", sec: "2s", desc: `1. اجعل شكل يديك مثل الماسة تحت صدرك.
+2. انزل ببطء مع الحفاظ على كوعك قريباً من جسمك.
+3. ركز القوة في عضلة الترايسبس والصدر الداخلي.`, vid: "https://youtube.com/embed/6VvkALvXyis"},
+                {n: "غطس للترايسبس", v: 12, t: "rep", sec: "3s", desc: `1. استند على حافة كرسي أو سرير.
+2. انزل بحوضك لأسفل مع ثني كوعك بزاوية 90 درجة.
+3. ادفع للأعلى حتى تفرد ذراعك.`, vid: "https://youtube.com/embed/ugOtn6QEcLk"},
+                {n: "ضغط مائل (Incline)", v: 8, t: "rep", sec: "4s", desc: `1. ضع يديك على مكان مرتفع (سرير مثلاً).
+2. انزل بصدرك وادفع.
+3. هذا التمرين يركز على عضلة الصدر السفلية.`, vid: "https://youtube.com/embed/vRMolr_Wqbg"},
+                {n: "ضغط الثبات", v: 30, t: "sec", sec: "5s", desc: `1. اتخذ وضع الضغط العادي.
+2. انزل لمنتصف المسافة واثبت في مكانك.
+3. شد عضلات بطنك وصدرك بقوة.`, vid: "https://youtube.com/embed/Mpg9jsWQFA0"},
+                {n: "ركلات التراي خلفية", v: 12, t: "rep", sec: "6s", desc: `1. امسك وزناً خفيفاً أو زجاجة ماء.
+2. مِل بجذعك للأمام وافرد ذراعك للخلف تماماً.
+3. اعصر عضلة الترايسبس في نهاية الحركة.`, vid: "https://youtube.com/embed/haE4F19U8_Y"},
+                {n: "ضغط تكتيكي سريع", v: 30, t: "sec", sec: "7s", desc: `1. قم بأكبر عدد من الضغط السريع.
+2. لا يهم الأداء المثالي هنا، المهم هو ضخ الدم.
+3. استمر حتى تشعر بحرق في عضلاتك.`, vid: "https://youtube.com/embed/x1qgo2CuP2c"}
+            ],
+            2: [ 
+                {n: "تجديف بالحقيبة", v: 12, t: "rep", sec: "1r", desc: `1. امسك حقيبة ظهر ثقيلة.
+2. مِل للأمام بظهر مفرود واسحب الحقيبة لبطنك.
+3. اعصر عضلات ظهرك في الأعلى.`, vid: "https://youtube.com/embed/3e4FBDNmfLc"},
+                {n: "بايسبس (حقيبة)", v: 12, t: "rep", sec: "2r", desc: `1. قف مفرود الظهر وامسك الحقيبة بيدك.
+2. ارفع يدك لكتفك مع تثبيت كوعك.
+3. انزل ببطء لتشعر بالمقاومة.`, vid: "https://youtube.com/embed/FjOmXlqOmow"},
+                {n: "سوبرمان (ظهر سفلي)", v: 15, t: "rep", sec: "3r", desc: `1. نم على بطنك مفرود الذراعين.
+2. ارفع صدرك وقدميك عن الأرض معاً.
+3. اثبت ثانية في الأعلى وانزل ببطء.`, vid: "https://youtube.com/embed/K8LSp6bn-VM"},
+                {n: "سحب المطرقة", v: 8, t: "rep", sec: "4r", desc: `1. امسك الحقيبة من الجانب بحيث يكون إبهامك للأعلى.
+2. ارفع الحقيبة لتشغيل عضلة الباي الخارجية والسواعد.
+3. حافظ على ثبات جسمك.`, vid: "https://youtube.com/embed/NnBVBVARGVU"},
+                {n: "المنشار (ذراع واحدة)", v: 8, t: "rep", sec: "5r", desc: `1. استند بيدك اليسرى على طاولة.
+2. اسحب الحقيبة بيدك اليمنى كأنك تشغل منشار.
+3. كرر للجانب الآخر بعد الانتهاء.`, vid: "https://youtube.com/embed/pVsnbLfIYYs"},
+                {n: "ثبات السحب", v: 40, t: "sec", sec: "6r", desc: `1. امسك الحقيبة واجعل ذراعك بزاوية 90 درجة.
+2. اثبت في مكانك مع شد الباي بقوة.
+3. تنفس بانتظام أثناء الثبات.`, vid: "https://youtube.com/embed/CEQ4YG8tTLs"}
+            ],
+            3: [ 
+                {n: "سكوات عسكري", v: 12, t: "rep", sec: "1l", desc: `1. قدميك بعرض كتفيك.
+2. انزل بحوضك كأنك تجلس على كرسي خيالي.
+3. حافظ على ظهرك مستقيماً ونظرك للأمام.`, vid: "https://youtube.com/embed/g4j3NRWJQCA"},
+                {n: "طعن (Lunges)", v: 10, t: "rep", sec: "2l", desc: `1. خذ خطوة واسعة للأمام.
+2. انزل بركبتك الخلفية حتى تلمس الأرض تقريباً.
+3. ادفع بقدمك الأمامية لتعود لوضع الوقوف.`, vid: "https://youtube.com/embed/LT3cMpiq_8c"},
+                {n: "سكوات القفز", v: 12, t: "rep", sec: "3l", desc: `1. انزل في وضع السكوات.
+2. ادفع الأرض بكل قوتك لتقفز لأعلى.
+3. اهبط بليونة وكرر فوراً.`, vid: "https://youtube.com/embed/7mRFniLDn0g"},
+                {n: "ثبات الحائط", v: 45, t: "sec", sec: "4l", desc: `1. اسند ظهرك للحائط وانزل حتى تصبح فخذيك موازية للأرض.
+2. حافظ على هذه الوضعية.
+3. شد عضلات بطنك وأرجلك.`, vid: "https://youtube.com/embed/cZCkPImpGJk"},
+                {n: "رفع السمانة واقفاً", v: 15, t: "rep", sec: "5l", desc: `1. قف على أطراف أصابعك.
+2. انزل ببطء حتى تلمس كعوبك الأرض.
+3. كرر الحركة بسرعة متوسطة.`, vid: "https://youtube.com/embed/ew1KtqkoADs"},
+                {n: "مشي البطة", v: 30, t: "sec", sec: "6l", desc: `1. اتخذ وضع السكوات العميق.
+2. حاول المشي للأمام مع الحفاظ على انخفاض حوضك.
+3. تمرين جبار لقوة التحمل العضلية.`, vid: "https://youtube.com/embed/qM3GNLKI9rg?si=uLQ9BrGA0MKcqozB"}
+            ],
+            4: [ 
+                {n: "ضغط مائل للأسفل (Decline)", v: 12, t: "rep", sec: "1b", desc: `1. ضع قدميك على سطح مرتفع (سرير أو كرسي).
+2. ضع يديك على الأرض وانزل بصدرك.
+3. ادفع للأعلى للتركيز على الصدر العلوي والأكتاف.`, vid: "https://youtube.com/embed/cxpoWu5caZo"},
+                {n: "رفرفة جانبية (زجاجات)", v: 12, t: "rep", sec: "2b", desc: `1. امسك زجاجتي ماء في يديك.
+2. ارفع ذراعيك للجانبين حتى مستوى كتفك.
+3. انزل ببطء، هذا التمرين يعطي عرضاً للكتف.`, vid: "https://youtube.com/embed/6IzeNkoxNX8"},
+                {n: "بلانك (Plank)", v: 30, t: "sec", sec: "3b", desc: `1. استند على ساعديك وأطراف أصابع قدمك.
+2. اجعل جسمك مستقيماً تماماً كلوح الخشب.
+3. اشفط بطنك للداخل واثبت.`, vid: "https://youtube.com/embed/BeQerYhwz98"},
+                {n: "Sit ups (بيدين متقاطعتين)", v: 12, t: "rep", sec: "4b", desc: `1. نم على ظهرك واثنِ ركبتيك.
+2. قاطع يديك على صدرك.
+3. ارفع جذعك بالكامل حتى تلمس ركبتيك بمرفقيك.`, vid: "https://youtube.com/embed/_mO_GlkjM6g"},
+                {n: "رفع الساقين", v: 8, t: "rep", sec: "5b", desc: `1. نم على ظهرك وضع يديك تحت حوضك.
+2. ارفع ساقيك مفرودتين حتى زاوية 90 درجة.
+3. انزل بهما ببطء دون أن يلمسا الأرض.`, vid: "https://youtube.com/embed/_PfN19TC4Zc"},
+                {n: "تسلق الجبال", v: 30, t: "sec", sec: "6b", desc: `1. وضع الضغط العالي.
+2. حرك ركبتك اليمنى لصدرك ثم اليسرى بسرعة.
+3. حافظ على ثبات ظهرك أثناء الحركة.`, vid: "https://youtube.com/embed/AhgK90G_4xk"}
+            ],
+            5: [ 
+                {n: "بيربيز (Burpees)", v: 12, t: "rep", sec: "1c", desc: `1. اقفز للأعلى ثم انزل لوضع الضغط.
+2. افعل ضغطة واحدة ثم اقفز مرة أخرى.
+3. التمرين الأهم لحرق الدهون وتقوية القلب.`, vid: "https://youtube.com/embed/pRrceqq7pwE"},
+                {n: "ضغط عادي", v: 12, t: "rep", sec: "2c", desc: `1. ضع يديك بعرض كتفيك.
+2. انزل بصدرك حتى يقترب من الأرض.
+3. ادفع بقوة للأعلى لتدريب الصدر والترايسبس.`, vid: "https://youtube.com/embed/x1qgo2CuP2c"},
+                {n: "سكوات عميق + ركلة", v: 12, t: "rep", sec: "3c", desc: `1. انزل سكوات وعند الوقوف اركل للأمام بقوة.
+2. بادل بين الساقين.
+3. تمرين ممتاز للجزء السفلي والبطن.`, vid: "https://youtube.com/embed/Mtk1Wgz__JA"},
+                {n: "الزحف العسكري", v: 30, t: "sec", sec: "4c", desc: `1. انزل على ساعديك وأطراف قدمك.
+2. حاول الزحف للأمام ببطء وبخطوات صغيرة.
+3. شد جسمك بالكامل كأنك تحت نيران العدو.`, vid: "https://youtube.com/embed/RG3ik4VacAA?si=THT3HDocbiem7QiY"},
+                {n: "قفز النجمة", v: 45, t: "sec", sec: "5c", desc: `1. اقفز مع فتح ذراعيك وقدميك.
+2. عد للوضع الأصلي فوراً.
+3. استمر برتم سريع لرفع الحرق.`, vid: "https://youtube.com/embed/efWaGPXEx1k"}
+            ],
+            6: [ 
+                {n: "بلانك (Plank)", v: 30, t: "sec", sec: "3b", desc: `1. استند على ساعديك وأطراف أصابع قدمك.
+2. اجعل جسمك مستقيماً تماماً كلوح الخشب.
+3. اشفط بطنك للداخل واثبت.`, vid: "https://youtube.com/embed/BeQerYhwz98"},
+                {n: "رفع الساقين", v: 12, t: "rep", sec: "5b", desc: `1. نم على ظهرك وضع يديك تحت حوضك.
+2. ارفع ساقيك مفرودتين حتى زاوية 90 درجة.
+3. انزل بهما ببطء.`, vid: "https://youtube.com/embed/_PfN19TC4Zc"},
+                {n: "تسلق الجبال", v: 30, t: "sec", sec: "6b", desc: `1. اتخذ وضع الضغط.
+2. حرك ركبتك اليمنى لصدرك ثم اليسرى بسرعة.
+3. حافظ على ثبات ظهرك.`, vid: "https://youtube.com/embed/AhgK90G_4xk"},
+                {n: "رفع الحوض", v: 12, t: "rep", sec: "5f", desc: `1. نم على ظهرك واثنِ ركبتيك وضع قدميك على الأرض.
+2. ارفع حوضك للأعلى حتى يصبح جسمك في خط مستقيم.
+3. اعصر عضلات المؤخرة واثبت لثانية.`, vid: "https://youtube.com/embed/RXgcvPMBSiw"},
+                {n: "روسين تويست", v: 10, t: "sec", sec: "4f", desc: `1. اجلس واثنِ ركبتيك وارفع قدميك قليلاً عن الأرض.
+2. مِل بظهرك للخلف قليلاً.
+3. لف جذعك ولمس الأرض بيديك يميناً ويساراً.`, vid: "https://youtube.com/embed/danwOyNumDA"},
+                {n: "بلانك جانبي يمين", v: 30, t: "sec", sec: "6f", desc: `1. استند على ساعدك الأيمن وجانب قدمك اليمنى.
+2. ارفع حوضك ليكون جسمك مستقيماً.
+3. اثبت على هذا الوضع.`, vid: "https://youtube.com/embed/SNUImK7E8KI?si=Su6P0qAjB-1v12U8"},
+                {n: "بلانك جانبي شمال", v: 30, t: "sec", sec: "7f", desc: `1. استند على ساعدك الأيسر وجانب قدمك اليسرى.
+2. ارفع حوضك ليكون جسمك مستقيماً.
+3. اثبت على هذا الوضع.`, vid: "https://youtube.com/embed/SNUImK7E8KI?si=Su6P0qAjB-1v12U8"}
+            ]
+        };
+
+        let uData = null;
+        let selWep = 'war';
+        let isFinalizing = false;
+        let isPaused = false;
+        let activeId = null, curEx = 0, curSet = 1, timer = null, timeLeft = 0, totalTimeForStep = 0;
+
+        function updateTheme(wKey, el) {
+            selWep = wKey;
+            const style = weaponStyles[wKey];
+            
+            document.documentElement.style.setProperty('--weapon-color', style.c);
+            document.documentElement.style.setProperty('--weapon-bg', style.bg);
+            
+            if(style.bgSize) { document.body.style.backgroundSize = style.bgSize; } 
+            else { document.body.style.backgroundSize = 'auto'; }
+
+            if(el) {
+                document.querySelectorAll('.w-card').forEach(c => c.classList.remove('selected'));
+                el.classList.add('selected');
+            }
+        }
+
+        function updateConnStatus() {
+            const statusBox = document.getElementById('conn-status');
+            const iconHolder = document.getElementById('conn-icon');
+            const textHolder = document.getElementById('conn-text');
+            
+            if (navigator.onLine) {
+                iconHolder.innerHTML = getIcon('wifi_on');
+                textHolder.innerHTML = '<span style="color:#2ecc71; margin-right:5px;">متصل بالقيادة</span>';
+                statusBox.style.display = 'flex';
+                setTimeout(() => { if(navigator.onLine) statusBox.style.opacity = '0'; setTimeout(()=> { if(statusBox.style.opacity === '0') statusBox.style.display='none'; }, 500); }, 3000);
+            } else {
+                iconHolder.innerHTML = getIcon('wifi_off');
+                textHolder.innerHTML = '<span style="color:#e74c3c; margin-right:5px;">وضعية الأوفلاين نشطة</span>';
+                statusBox.style.display = 'flex';
+                statusBox.style.opacity = '1';
+            }
+        }
+
+        window.onload = () => {
+            setupStaticIcons();
+            
+            window.addEventListener('online', () => { updateConnStatus(); setupStaticIcons(); syncUI(); });
+            window.addEventListener('offline', () => { updateConnStatus(); setupStaticIcons(); syncUI(); });
+            updateConnStatus();
+
+            const savedData = localStorage.getItem('militaryOS_user');
+            if(savedData) {
+                uData = JSON.parse(savedData);
+                initSession();
+            } else {
+                document.getElementById('view-auth').classList.add('active');
+            }
+        };
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) {
+                isPaused = true;
+            } else {
+                if (document.getElementById('help-box').style.display !== 'block' && 
+                    document.getElementById('video-box').style.display !== 'block' &&
+                    document.getElementById('view-workout').classList.contains('active')) {
+                    isPaused = false;
+                }
+            }
+        });
+
+        function handleAuth() {
+            const name = document.getElementById('reg-name').value;
+            if(!name || name.trim() === '') return alert("الرجاء إدخال الاسم العسكري بالكامل");
+            
+            uData = { name: name, weapon: selWep, points: 0, completed: [0] };
+            saveData();
+            initSession();
+        }
+
+        function initSession() {
+            syncUI();
+            document.getElementById('navbar').style.display = 'flex';
+            switchView('view-map', document.querySelector('.nav-item'));
+        }
+
+        function saveData() { localStorage.setItem('militaryOS_user', JSON.stringify(uData)); }
+
+        function logOut() {
+            if(confirm("هل أنت متأكد من تسجيل الخروج؟ سيتم حفظ تقدمك على هذا الجهاز.")) {
+                if(timer) { clearInterval(timer); timer = null; }
+                uData = null;
+                document.getElementById('hud').style.display = 'none';
+                document.getElementById('navbar').style.display = 'none';
+                switchView('view-auth');
+            }
+        }
+
+        function syncUI() {
+            if(!uData) return;
+            const wInfo = weaponStyles[uData.weapon];
+            updateTheme(uData.weapon);
+            
+            const rList = ranks[uData.weapon] || ranks['war'];
+            const rIdx = Math.min(Math.floor(uData.points / 12000), rList.length - 1);
+            const pct = Math.floor(((uData.points % 12000) / 12000) * 100);
+
+            document.getElementById('h-rank').innerText = rList[rIdx];
+            document.getElementById('h-weapon').innerText = wInfo.n;
+            document.getElementById('h-icon').innerHTML = getIcon(wInfo.i);
+            document.getElementById('h-pts').innerText = uData.points;
+            
+            document.getElementById('p-name').innerText = uData.name;
+            document.getElementById('p-rank').innerText = rList[rIdx];
+            document.getElementById('p-weapon').innerText = wInfo.n;
+            document.getElementById('p-pts').innerText = uData.points;
+            document.getElementById('p-icon').innerHTML = getIcon(wInfo.i);
+            
+            if (uData.currentSession) {
+                document.getElementById('p-stage').innerHTML = `المهمة ${uData.completed.length} <span style="color:var(--accent); font-size:10px;">(قيد التنفيذ)</span>`;
+            } else {
+                document.getElementById('p-stage').innerText = "المهمة " + uData.completed.length;
+            }
+            
+            setTimeout(() => {
+                document.getElementById('rank-fill').style.width = pct + "%";
+                document.getElementById('p-pct').innerText = pct + "%";
+            }, 300);
+
+            renderMap();
+        }
+
+        function renderMap() {
+            const cont = document.getElementById('map-cont');
+            cont.innerHTML = '';
+            const current = uData.completed.length;
+
+            for(let i=1; i<=90; i++) {
+                const isDone = uData.completed.includes(i);
+                const isCurrent = i === current;
+
+                const div = document.createElement('div');
+                div.className = `node ${isDone?'done':''} ${isCurrent?'active':''}`;
+                div.id = `mission-${i}`;
+                div.innerHTML = i%7===0 ? `<div style="font-size: 26px;">${getIcon('camp')}</div>` : i;
+                
+                div.onclick = () => { 
+                    if(isCurrent) { startMission(i); } 
+                    else if(isDone) { alert("أتممت هذه المهمة مسبقاً! واصل تقدمك."); } 
+                    else { alert("أتمم المهام السابقة أولاً للوصول لهذه النقطة."); }
+                };
+                cont.appendChild(div);
+            }
+        }
+
+        function focusMission() {
+            if(!uData) return;
+            const current = uData.completed.length;
+            const el = document.getElementById(`mission-${current}`);
+            if(el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function playHeavySiren() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(300, ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(800, ctx.currentTime + 0.4);
+                osc.frequency.linearRampToValueAtTime(300, ctx.currentTime + 0.8);
+                osc.frequency.linearRampToValueAtTime(800, ctx.currentTime + 1.2);
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.6);
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(); osc.stop(ctx.currentTime + 1.6);
+            } catch(e) {}
+        }
+
+        function startMission(id) {
+            if(id % 7 === 0) {
+                if(isFinalizing || uData.completed.includes(id)) return;
+                isFinalizing = true;
+                alert("معسكر راحة! حصلت على 2000 نقطة استرداد لياقة.");
+                uData.points += 2000;
+                uData.completed.push(id);
+                saveData();
+                syncUI();
+                isFinalizing = false;
+                return;
+            }
+            
+            activeId = id;
+            
+            if (uData.currentSession && uData.currentSession.id === id) {
+                document.getElementById('res-user-name').innerText = uData.name;
+                document.getElementById('res-mission-id').innerText = id;
+                document.getElementById('resume-modal').style.display = 'flex'; 
+            } else {
+                curEx = 0;
+                curSet = 1;
+                launchWorkout();
+            }
+        }
+
+        function confirmResume(shouldResume) {
+            document.getElementById('resume-modal').style.display = 'none';
+            if (!shouldResume) {
+                curEx = 0;
+                curSet = 1;
+                delete uData.currentSession;
+                saveData();
+                syncUI();
+            } else {
+                curEx = uData.currentSession.exIdx || 0;
+                curSet = uData.currentSession.setIdx || 1;
+            }
+            launchWorkout();
+        }
+
+        function launchWorkout() {
+            switchView('view-workout');
+            loadStep();
+        }
+
+        function loadStep() {
+            const dayNum = ((activeId-1)%7)+1;
+            const routine = dailyWorkouts[dayNum];
+            const ex = routine[curEx];
+            
+            const level = Math.min(3, Math.floor((activeId - 1) / 30) + 1);
+            const dayWithinLevel = (activeId - 1) % 30; 
+            const weekWithinLevel = Math.floor(dayWithinLevel / 7); 
+            const totalSets = level; 
+
+            document.getElementById('wo-title').innerText = `المستوى ${level} - مهمة ${activeId} (المجموعة ${curSet}/${totalSets})`;
+            document.getElementById('ex-name').innerText = ex.n;
+            
+            document.getElementById('help-desc').innerText = ex.desc;
+            document.getElementById('vid-player').src = ex.vid;
+            
+            const totalSteps = routine.length * totalSets;
+            const currentStepIndex = ((curSet - 1) * routine.length) + curEx;
+            const progress = (currentStepIndex / totalSteps) * 100;
+            document.getElementById('ex-progress-fill').style.width = progress + "%";
+            document.getElementById('ex-progress-pct').innerText = Math.round(progress) + "%";
+
+            uData.currentSession = { id: activeId, exIdx: curEx, setIdx: curSet };
+            saveData();
+            
+            document.getElementById('help-box').style.display = 'none'; 
+            document.getElementById('video-box').style.display = 'none';
+            isPaused = false;
+            
+            document.getElementById('btn-main').style.display = 'block';
+            document.getElementById('rest-ctrls').style.display = 'none';
+
+            const addedReps = weekWithinLevel * 3;
+            const addedSecs = weekWithinLevel * 5;
+
+            const timerProgress = document.getElementById('timer-progress');
+
+            if(ex.t === 'rep') {
+                timeLeft = ex.v + addedReps; 
+                totalTimeForStep = timeLeft;
+                document.getElementById('timer-val').innerText = timeLeft;
+                document.getElementById('timer-type').innerText = "عدة";
+                document.getElementById('btn-main').innerText = "تم التنفيذ بنجاح";
+                
+                if(timerProgress) {
+                    timerProgress.style.transition = 'none';
+                    timerProgress.style.strokeDashoffset = '0';
+                }
+            } else {
+                timeLeft = ex.v + addedSecs;
+                totalTimeForStep = timeLeft;
+                document.getElementById('timer-val').innerText = timeLeft;
+                document.getElementById('timer-type').innerText = "ثانية";
+                document.getElementById('btn-main').innerText = "بدء المؤقت";
+                
+                if(timerProgress) {
+                    timerProgress.style.transition = 'none';
+                    timerProgress.style.strokeDashoffset = '0';
+                    setTimeout(() => timerProgress.style.transition = 'stroke-dashoffset 1s linear', 50);
+                }
+            }
+        }
+
+        function handleStep() {
+            const dayNum = ((activeId-1)%7)+1;
+            const routine = dailyWorkouts[dayNum];
+            const ex = routine[curEx];
+            const level = Math.min(3, Math.floor((activeId - 1) / 30) + 1);
+            const totalSets = level;
+
+            if(ex.t === 'sec' && document.getElementById('btn-main').innerText === "بدء المؤقت") {
+                document.getElementById('btn-main').style.display = 'none';
+                startCounter(() => {
+                    playHeavySiren();
+                    document.getElementById('btn-main').style.display = 'block';
+                    if(curEx === routine.length - 1 && curSet === totalSets) {
+                        document.getElementById('btn-main').innerText = "إنهاء المهمة";
+                    } else {
+                        document.getElementById('btn-main').innerText = "بدء الراحة";
+                    }
+                });
+            } else {
+                if(curEx === routine.length - 1 && curSet === totalSets) {
+                    finalize(); 
+                } else {
+                    startRest();
+                }
+            }
+        }
+
+        function startRest() {
+            if(timer) { clearInterval(timer); timer = null; }
+            document.getElementById('ex-name').innerText = "راحة تكتيكية";
+            document.getElementById('timer-type').innerText = "ثانية";
+            document.getElementById('help-box').style.display = 'none';
+            document.getElementById('video-box').style.display = 'none';
+            isPaused = false;
+            
+            document.getElementById('btn-main').style.display = 'none';
+            document.getElementById('rest-ctrls').style.display = 'flex';
+            
+            timeLeft = 30;
+            totalTimeForStep = 30;
+            
+            const timerProgress = document.getElementById('timer-progress');
+            if(timerProgress) {
+                timerProgress.style.transition = 'none';
+                timerProgress.style.strokeDashoffset = '0';
+                setTimeout(() => timerProgress.style.transition = 'stroke-dashoffset 1s linear', 50);
+            }
+
+            startCounter(() => { 
+                playHeavySiren(); 
+                const dayNum = ((activeId-1)%7)+1;
+                const routine = dailyWorkouts[dayNum];
+                
+                if (curEx === routine.length - 1) {
+                    curEx = 0;   
+                    curSet++;    
+                } else {
+                    curEx++;     
+                }
+                loadStep(); 
+            });
+        }
+
+        function startCounter(cb) {
+            if(timer) { clearInterval(timer); timer = null; }
+            document.getElementById('timer-val').innerText = timeLeft;
+            updateTimerCircle(timeLeft, totalTimeForStep);
+            
+            timer = setInterval(() => {
+                if(!isPaused) {
+                    timeLeft--;
+                    document.getElementById('timer-val').innerText = timeLeft;
+                    updateTimerCircle(timeLeft, totalTimeForStep);
+                    if(timeLeft <= 0) { 
+                        clearInterval(timer);
+                        timer = null;
+                        cb(); 
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateTimerCircle(current, total) {
+            const circle = document.getElementById('timer-progress');
+            if(!circle || total <= 0) return;
+            const pct = current / total;
+            const offset = 503 - (pct * 503);
+            circle.style.strokeDashoffset = offset;
+        }
+
+        function toggleHelp() { 
+            document.getElementById('help-box').style.display = 'block';
+            document.getElementById('video-box').style.display = 'none';
+            const iframe = document.getElementById('vid-player');
+            iframe.src = iframe.src;
+            isPaused = true;
+        }
+
+        function toggleVideo() {
+            document.getElementById('video-box').style.display = 'block';
+            document.getElementById('help-box').style.display = 'none';
+            isPaused = true;
+        }
+
+        function goToDetailedHelp() {
+            const dayNum = ((activeId-1)%7)+1;
+            const routine = dailyWorkouts[dayNum];
+            const ex = routine[curEx];
+            
+            if(ex.sec && ex.sec !== "SectionName") {
+                isPaused = true;
+                location.href = 'go:' + ex.sec;
+            } else {
+                alert("تحذير: لم يتم ربط قسم الشرح المفصل لهذا التمرين بعد.");
+            }
+        }
+
+        function resumeWorkout() {
+            document.getElementById('help-box').style.display = 'none';
+            document.getElementById('video-box').style.display = 'none';
+            const iframe = document.getElementById('vid-player');
+            iframe.src = iframe.src;
+            isPaused = false;
+        }
+
+        function add15Sec() { 
+            timeLeft += 15; 
+            totalTimeForStep += 15; 
+            document.getElementById('timer-val').innerText = timeLeft; 
+            updateTimerCircle(timeLeft, totalTimeForStep);
+        }
+        function skipRest() { timeLeft = 0; }
+
+        function finalize() {
+            if(isFinalizing || uData.completed.includes(activeId)) return;
+            if(timer) { clearInterval(timer); timer = null; }
+            
+            document.getElementById('ex-progress-fill').style.width = "100%";
+            document.getElementById('ex-progress-pct').innerText = "100%";
+            delete uData.currentSession;
+            saveData();
+            
+            switchView('view-reward');
+        }
+
+        function showRewardedAd() {
+            document.getElementById('ad-btn').innerText = "جاري عرض الإعلان...";
+            document.getElementById('ad-btn').disabled = true;
+            location.href='go:558';
+            
+            setTimeout(() => {
+                isFinalizing = true;
+                const bonus = 1200 + (activeId*50);
+                uData.points += bonus;
+                uData.completed.push(activeId);
+                saveData();
+                syncUI();
+         
+                alert("تم استلام المكافأة بنجاح! + " + bonus + " نقطة.");
+                isFinalizing = false;
+                
+                document.getElementById('ad-btn').innerText = "شاهد الإعلان للحصول على المكافأة";
+                document.getElementById('ad-btn').disabled = false;
+                switchView('view-map', document.querySelectorAll('.nav-item')[0]);
+            }, 2500); 
+        }
+
+        function resetProgress() {
+            if(confirm("تحذير عسكري: هل أنت متأكد من تصفير كافة بياناتك والعودة لنقطة الصفر؟ لا يمكن التراجع عن هذا القرار!")) {
+                if(timer) { clearInterval(timer); timer = null; }
+                uData.points = 0;
+                uData.completed = [0];
+                delete uData.currentSession;
+                saveData();
+                syncUI();
+                alert("تمت إعادة التعيين لـ طالب بنجاح.");
+                switchView('view-map', document.querySelectorAll('.nav-item')[0]);
+            }
+        }
+
+        function switchView(id, navEl) {
+            if (id !== 'view-workout') {
+                if(timer) {
+                    clearInterval(timer);
+                    timer = null;
+                }
+                isPaused = false;
+            }
+
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            
+            document.getElementById('hud').style.display = (id === 'view-map') ? 'block' : 'none';
+            
+            if(document.getElementById('vid-player')) {
+                const iframe = document.getElementById('vid-player');
+                iframe.src = iframe.src;
+            }
+
+            if(navEl) {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                navEl.classList.add('active');
+            }
+            if(id === 'view-map') setTimeout(focusMission, 400);
+        }
+    </script>
+</body>
+</html>
