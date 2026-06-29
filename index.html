@@ -153,7 +153,6 @@
         }
         .prog-motivation { font-size: 9px; color: var(--text-muted); margin-top: 5px; text-align: center; }
 
-        /* --- التعديلات الخاصة بقسم (قريباً) --- */
         .module-card.locked {
             opacity: 0.5;
             cursor: not-allowed;
@@ -206,7 +205,6 @@
         let currentCatIndex = 0; 
         let globalProgress = 0; 
 
-        // تم إضافة الأيقونات الجديدة هنا لضمان عملها أوفلاين
         const fallbackIcons = {
             'fa-dumbbell': '🏋️', 'fa-calendar-check': '📅', 'fa-child-reaching': '🧍', 
             'fa-crosshairs': '🎯', 'fa-fire': '🔥', 'fa-clipboard-list': '📋', 'fa-gift': '🎁',
@@ -225,9 +223,8 @@
             {
                 categoryId: 'c_training', categoryName: 'ساحة التدريب', categoryIcon: 'fa-dumbbell',
                 items: [
-                    { id: 'main1.1', name: 'معسكر الـ 90 يوم', icon: 'fa-calendar-check', desc: 'برنامج الإعداد البدني والمهام الشامل الشاق', featured: true, hasProgress: true },
+                    { id: 'cm12', name: 'معسكر الـ 90 يوم', icon: 'fa-calendar-check', desc: 'برنامج الإعداد البدني والمهام الشامل الشاق', featured: true, hasProgress: true },
                     { id: 'main1.2', name: 'التشريح العضلي', icon: 'fa-child-reaching', desc: 'تمارين مخصصة لاستهداف كل عضلة تفصيلياً', featured: false,comingSoon:true },
-                    // تمت إضافة بطاقة الأرقام القياسية هنا
                     { id: 'main1.3', name: 'الأرقام القياسية', icon: 'fa-ranking-star', desc: 'اختبار أقصى عدد تكرارات (الضغط، العقلة، السكوات) لتقييم وتسجيل مستواك', featured: false }
                 ]
             },
@@ -243,14 +240,11 @@
                 items: [
                     { id: 'main3.5', name: 'اختيار الكلية العسكرية المناسبة', icon: 'fa-graduation-cap', desc: 'تحليل شامل لقدراتك ومؤهلاتك لتحديد الكلية العسكرية المثالية لطموحك', featured: true },
                     { id: 'main3.1', name: 'دليل الكليات والمعاهد', icon: 'fa-book-open', desc: 'دليلك الشامل لشروط القبول، طبيعة الدراسة، والمميزات بالكامل', featured: false },
-                    // تمت إضافة بطاقة المتخصصين هنا
                     { id: 'main3.6', name: 'دليل المتخصصين', icon: 'fa-briefcase', desc: 'شروط القبول والتخصصات المطلوبة لخريجي الجامعات والضباط المتخصصين', featured: false },
-                    // تمت إضافة بطاقة خريطة الكليات هنا (أفضل مكان لها لترتيب الخطوات)
                     { id: 'main3.7', name: 'خريطة الكليات والمعاهد', icon: 'fa-map-location-dot', desc: 'المواقع الجغرافية وعناوين الكليات العسكرية ومقرات سحب الملفات على الخريطة', featured: false },
                     { id: 'main3.2', name: 'محاكاة اختبارات القبول', icon: 'fa-brain', desc: 'اختبر جاهزيتك وتعرف على مراحل الاختبارات الحقيقية خطوة بخطوة', featured: false },
                     { id: 'main3.3', name: 'تكتيكات القبول', icon: 'fa-lightbulb', desc: 'نصائح ذهبية وتوجيهات حاسمة لتعزيز فرصك في اجتياز الاختبارات', featured: false },
                     { id: 'main3.4', name: 'إدارة الأزمات', icon: 'fa-triangle-exclamation', desc: 'توقع العقبات الميدانية والإدارية وتعرف على الحلول السريعة', featured: false },
-                    // تمت إضافة بطاقة الأقسام العسكرية هنا
                     { id: 'main3.8', name: 'الاقسام والتخصصات', icon: 'fa-scroll', desc: 'عبارة عن شرح لكل قسم داخل كل كلية عسكرية', featured: true }
                 ]
             },
@@ -264,6 +258,303 @@
             },
             {
                 categoryId: 'c_clinic', categoryName: 'العيادة العسكرية', categoryIcon: 'fa-suitcase-medical',
+                items: [
+                    { id: 'main5.1', name: 'الفحص الطبي الشامل', icon: 'fa-stethoscope', desc: 'حساب التناسق البدني، احتياج المياه، والسعرات اليومية الدقيقة بناءً على بياناتك', featured: true },
+                    { id: 'main5.2', name: 'التشريح الوظيفي', icon: 'fa-x-ray', desc: 'اكتشف أجهزة الجسم الحيوي والمكملات الداعمة لكل جهاز بدقة', featured: false },
+                    { id: 'main5.3', name: 'سجل الإصابات الميدانية', icon: 'fa-bandage', desc: 'دليل التعامل مع الإصابات الطارئة، الإسعافات الأولية وتأهيل المفاصل', featured: false }
+                ]
+            },
+            {
+                categoryId: 'c_intel', categoryName: 'الاستخبارات والتكتيك', categoryIcon: 'fa-user-secret',
+                items: [
+                    { id: 'main6.1', name: 'الشفرات العسكرية', icon: 'fa-key', desc: 'أسرار فك التشفير، مورس، والبيجبين للتواصل السري', featured: true },
+                    { id: 'main6.2', name: 'الخريطة الميدانية', icon: 'fa-map-marked-alt', desc: 'قراءة التضاريس والإحداثيات لتحديد موقعك التكتيكي', featured: false },
+                    { id: 'main6.3', name: 'البوصلة العسكرية', icon: 'fa-compass', desc: 'تحديد الاتجاهات والمسارات في أصعب الظروف', featured: false },
+                    { id: 'main6.4', name: 'المخطط اليومي', icon: 'fa-calendar-days', desc: 'اكتشف الروتين اليومي الصارم لطلاب الكليات العسكرية', featured: false },
+                    { id: 'main6.5', name: 'الوثائق السرية', icon: 'fa-file-signature', desc: 'حكم عسكرية، اقتباسات، ومبادئ راسخة من قلب المعارك', featured: false },
+                    { id: 'main6.6', name: 'سجل الأبطال', icon: 'fa-medal', desc: 'قصص وتضحيات خالدة لرجال صدقوا ما عاهدوا الله عليه', featured: false },
+                    { id: 'main6.7', name: 'قوانين البقاء', icon: 'fa-campground', desc: 'مهارات التعايش، تدبير الموارد، والبقاء على قيد الحياة في الظروف القاسية', featured: false }
+                ]
+            },
+            {
+                categoryId: 'c_tools', categoryName: 'أدوات المهام', categoryIcon: 'fa-toolbox',
+                items: [
+                    { id: 'main7.1', name: 'يوميات المقاتل', icon: 'fa-book-journal-whills', desc: 'سجل مذكراتك وصورك بسرية تامة (مؤمنة بالبصمة وكلمة المرور)', featured: true },
+                    { id: 'main7.2', name: 'المهام الميدانية', icon: 'fa-list-check', desc: 'نظم أهدافك اليومية وتابع مستوى إنجازك بصرامة', featured: false },
+                    { id: 'tool_apps', name: 'ترسانة التطبيقات', icon: 'fa-mobile-screen-button', desc: 'تطبيقات إضافية مساعدة لرفع كفاءتك التقنية والبدنية', featured: false , comingSoon: true}
+                ]
+            },
+            {
+                categoryId: 'c_community', categoryName: 'القيادة والمجتمع', categoryIcon: 'fa-users-viewfinder',
+                items: [
+                    { id: 'main8.1', name: 'مجتمع المقاتلين', icon: 'fa-users', desc: 'غرف تواصل، نقاشات متخصصة، ودردشة لتبادل الخبرات الميدانية', featured: true, comingSoon: true },
+                    { id: 'main8.2', name: 'البث المركزي', icon: 'fa-youtube', desc: 'تابع أحدث الإصدارات المرئية، الشروحات، والتدريبات الحصرية', featured: false, comingSoon: true }
+                ]
+            }
+        ];
+
+        const weaponStyles = {
+            war: { n: 'سلاح المشاة', c: '#4b5320', i: 'fa-person-rifle' },
+            navy: { n: 'القوات البحرية', c: '#1a5276', i: 'fa-anchor' },
+            air: { n: 'القوات الجوية', c: '#2e86c1', i: 'fa-jet-fighter' },
+            police: { n: 'هيئة الشرطة', c: '#212f3d', i: 'fa-shield-halved' },
+            def: { n: 'الدفاع الجوي', c: '#117a65', i: 'fa-satellite-dish' },
+            med: { n: 'الطب العسكري', c: '#c0392b', i: 'fa-user-nurse' },
+            tech: { n: 'الفنية العسكرية', c: '#7f8c8d', i: 'fa-microchip' },
+            it: { n: 'التكنولوجيا العسكرية', c: '#6c5ce7', i: 'fa-code' }
+        };
+
+        const ranks = {
+            war: ['طالب','ملازم','نقيب','رائد','مقدم','عقيد','عميد','لواء','فريق أول'],
+            navy: ['طالب','ملازم بحري','نقيب بحري','رائد بحري','مقدم بحري','عقيد بحري','عميد بحري','لواء بحري'],
+            air: ['طالب','ملازم طيار','نقيب طيار','رائد طيار','مقدم طيار','عقيد طيار','عميد طيار','لواء طيار'],
+            police: ['طالب','ملازم شرطة','نقيب شرطة','رائد شرطة','مقدم شرطة','عقيد شرطة','عميد شرطة','لواء شرطة'],
+            def: ['طالب','ملازم دفاع جوي','نقيب دفاع جوي','رائد دفاع جوي','لواء دفاع جوي'],
+            med: ['طالب','ملازم طبيب','نقيب طبيب','رائد طبيب','مقدم طبيب','عقيد طبيب','عميد طبيب','لواء طبيب'],
+            tech: ['طالب ','ملازم مهندس','نقيب مهندس','رائد مهندس','مقدم مهندس','عقيد مهندس','عميد مهندس','لواء مهندس'],
+            it: ['طالب ','ملازم تكنولوجي','نقيب تكنولوجي','رائد تكنولوجي','مقدم تكنولوجي','عقيد تكنولوجي','عميد تكنولوجي','لواء تكنولوجي']
+        };
+
+        const originalSetItem = localStorage.setItem;
+        localStorage.setItem = function(key, value) {
+            const event = new Event('itemInserted');
+            originalSetItem.apply(this, arguments);
+            document.dispatchEvent(event);
+        };
+
+        function getSafeIcon(iconClass, fallbackName) {
+            if (navigator.onLine) {
+                return `<i class="fas ${iconClass}"></i>`;
+            } else {
+                let fallback = fallbackIcons[iconClass] || fallbackName.charAt(0);
+                return `<span class="offline-emoji">${fallback}</span>`;
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadUserData();
+            buildCategories();
+            switchTab(0); 
+            setupSwipeGestures(); 
+            
+            if(!navigator.onLine) {
+                document.getElementById('btn-prev').innerHTML = '<span class="offline-emoji">❯</span>';
+                document.getElementById('btn-next').innerHTML = '<span class="offline-emoji">❮</span>';
+            }
+        });
+
+        function loadUserData() {
+            let savedData = localStorage.getItem('militaryOS_user');
+            let selectedWeapon;
+
+            if(savedData) {
+                let uData = JSON.parse(savedData);
+                let wKey = uData.weapon || 'war';
+                selectedWeapon = weaponStyles[wKey] || weaponStyles['war'];
+                
+                let rList = ranks[wKey] || ranks['war'];
+                let pts = uData.points || 0;
+                let rIdx = Math.min(Math.floor(pts / 12000), rList.length - 1);
+                
+                document.getElementById('hud-name').innerText = uData.name || "مقاتل مجهول";
+                document.getElementById('hud-points').innerText = pts;
+                document.getElementById('hud-rank').innerText = rList[rIdx];
+                document.getElementById('hud-weapon').innerText = selectedWeapon.n;
+
+                if (uData.completed && Array.isArray(uData.completed)) {
+                    let currentStage = uData.completed.length; 
+                    globalProgress = Math.floor(((currentStage - 1) / 90) * 100);
+                } else {
+                    globalProgress = 0;
+                }
+                globalProgress = Math.min(100, Math.max(0, globalProgress));
+
+            } else {
+                let keys = Object.keys(weaponStyles);
+                let randomKey = keys[Math.floor(Math.random() * keys.length)];
+                selectedWeapon = weaponStyles[randomKey];
+
+                document.getElementById('hud-name').innerText = "غير مسجل بالخدمة";
+                document.getElementById('hud-rank').innerText = "كاديت زائر";
+                document.getElementById('hud-weapon').innerText = "سجل بالمعسكر أولاً";
+                globalProgress = 0;
+            }
+
+            document.documentElement.style.setProperty('--weapon-color', selectedWeapon.c);
+            document.documentElement.style.setProperty('--weapon-glow', `color-mix(in srgb, ${selectedWeapon.c} 40%, transparent)`);
+            document.getElementById('hud-icon').innerHTML = getSafeIcon(selectedWeapon.i, selectedWeapon.n);
+
+            updateAllProgressBars();
+        }
+
+        function updateAllProgressBars() {
+            const allBars = document.querySelectorAll('.prog-fill');
+            const allPercents = document.querySelectorAll('[id^="percent-"]');
+            const allMotivations = document.querySelectorAll('[id^="motivation-"]');
+
+            let motivationMsg = "لم تبدأ بعد.. الميدان في انتظارك!";
+            if(globalProgress > 0 && globalProgress <= 30) motivationMsg = "بداية موفقة، استمر يا بطل!";
+            else if(globalProgress > 30 && globalProgress <= 70) motivationMsg = "نصف المشوار انتهى، لا مجال للاستسلام!";
+            else if(globalProgress > 70 && globalProgress < 100) motivationMsg = "أداء قتالي استثنائي، التخرج قريب!";
+            else if(globalProgress >= 100) motivationMsg = "تم إنجاز كافة المهام بامتياز يا قائد!";
+
+            allBars.forEach(bar => bar.style.width = globalProgress + '%');
+            allPercents.forEach(p => p.innerText = globalProgress + '%');
+            allMotivations.forEach(m => m.innerText = motivationMsg);
+        }
+
+        function buildCategories() {
+            const catContainer = document.getElementById('cat-container');
+            catContainer.innerHTML = '';
+
+            systemModules.forEach((cat, index) => {
+                const btn = document.createElement('div');
+                btn.className = `cat-tab ${index === 0 ? 'active' : ''}`;
+                btn.id = `tab-${index}`;
+                
+                const safeIcon = getSafeIcon(cat.categoryIcon, cat.categoryName);
+                btn.innerHTML = `${safeIcon} <span>${cat.categoryName}</span>`;
+                btn.onclick = () => switchTab(index);
+                catContainer.appendChild(btn);
+            });
+        }
+
+        function updateNavButtonsState() {
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+            if(btnPrev) {
+                btnPrev.style.opacity = currentCatIndex === 0 ? '0.2' : '1';
+                btnPrev.style.pointerEvents = currentCatIndex === 0 ? 'none' : 'auto';
+            }
+            if(btnNext) {
+                btnNext.style.opacity = currentCatIndex === systemModules.length - 1 ? '0.2' : '1';
+                btnNext.style.pointerEvents = currentCatIndex === systemModules.length - 1 ? 'none' : 'auto';
+            }
+        }
+
+        function navPrev() {
+            if (currentCatIndex > 0) switchTab(currentCatIndex - 1);
+        }
+
+        function navNext() {
+            if (currentCatIndex < systemModules.length - 1) switchTab(currentCatIndex + 1);
+        }
+
+        function switchTab(index) {
+            currentCatIndex = index;
+            document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+            const activeBtn = document.getElementById(`tab-${index}`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            }
+            renderModules(systemModules[index].categoryId);
+            updateNavButtonsState();
+        }
+
+        function renderModules(categoryId) {
+            const modContainer = document.getElementById('modules-container');
+            modContainer.innerHTML = ''; 
+
+            const category = systemModules.find(c => c.categoryId === categoryId);
+            if(category && category.items) {
+                category.items.forEach(item => {
+                    const isFeatured = item.featured ? 'featured' : '';
+                    const hasProgress = item.hasProgress ? 'has-progress' : '';
+                    
+                    const isLocked = item.comingSoon ? 'locked' : ''; 
+                    
+                    const card = document.createElement('div');
+                    card.className = `module-card ${isFeatured} ${hasProgress} ${isLocked}`;
+                    
+                    if (!item.comingSoon) {
+                        card.onclick = function() {
+                            location.href = item.id + '.html';
+                        };
+                    }
+                    
+                    const safeIcon = getSafeIcon(item.icon, item.name);
+                    
+                    const soonBadge = item.comingSoon ? `<div class="coming-soon-label">قريباً</div>` : '';
+
+                    if (item.hasProgress) {
+                        card.innerHTML = `
+                            ${soonBadge}
+                            <div class="m-top-section">
+                                <div class="m-icon">${safeIcon}</div>
+                                <div class="m-content">
+                                    <h3>${item.name}</h3>
+                                    <p>${item.desc}</p>
+                                </div>
+                            </div>
+                            <div class="progress-container">
+                                <div class="prog-head">
+                                    <span>مستوى إنجاز المعسكر</span>
+                                    <span style="color:var(--accent); font-family:'Orbitron';" id="percent-${item.id}">0%</span>
+                                </div>
+                                <div class="prog-track">
+                                    <div class="prog-fill" id="fill-${item.id}"></div>
+                                </div>
+                                <div class="prog-motivation" id="motivation-${item.id}">جاري التحليل...</div>
+                            </div>
+                        `;
+                    } else {
+                        card.innerHTML = `
+                            ${soonBadge}
+                            <div class="m-icon">${safeIcon}</div>
+                            <div class="m-content">
+                                <h3>${item.name}</h3>
+                                <p>${item.desc}</p>
+                            </div>
+                        `;
+                    }
+                    
+                    modContainer.appendChild(card);
+                });
+                updateAllProgressBars();
+            }
+        }
+
+        function setupSwipeGestures() {
+            let touchStartX = 0; let touchStartY = 0;
+            let touchEndX = 0; let touchEndY = 0;
+            const swipeZone = document.getElementById('modules-container');
+
+            swipeZone.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
+            }, { passive: true });
+
+            swipeZone.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                touchEndY = e.changedTouches[0].screenY;
+                handleSwipeGesture();
+            }, { passive: true });
+
+            function handleSwipeGesture() {
+                const diffX = touchEndX - touchStartX;
+                const diffY = touchEndY - touchStartY;
+
+                if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                    if (diffX > 0) {
+                        navNext(); 
+                    } else {
+                        navPrev();
+                    }
+                }
+            }
+        }
+
+        window.addEventListener('storage', loadUserData); 
+        window.addEventListener('focus', loadUserData);
+        document.addEventListener('itemInserted', loadUserData, false); 
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') loadUserData(); 
+        });
+        setInterval(loadUserData, 1500); 
+    </script>
+</body>
+</html>                categoryId: 'c_clinic', categoryName: 'العيادة العسكرية', categoryIcon: 'fa-suitcase-medical',
                 items: [
                     { id: 'main5.1', name: 'الفحص الطبي الشامل', icon: 'fa-stethoscope', desc: 'حساب التناسق البدني، احتياج المياه، والسعرات اليومية الدقيقة بناءً على بياناتك', featured: true },
                     { id: 'main5.2', name: 'التشريح الوظيفي', icon: 'fa-x-ray', desc: 'اكتشف أجهزة الجسم الحيوي والمكملات الداعمة لكل جهاز بدقة', featured: false },
