@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الخريطة التكتيكية للعيادات الطبية</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@600;800&display=swap');
+
+        :root {
+            --camo-dark: #0f140f;
+            --camo-green: #2b3a26;
+            --camo-light: #4b5f43;
+            --alert-red: #d32f2f;
+            --gold-star: #e6c200;
+            --text-main: #e8ece6;
+            --grid-color: rgba(75, 95, 67, 0.2);
+        }
+
+        body {
+            background-color: var(--camo-dark);
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--text-main);
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 15px;
+            overflow-x: hidden;
+        }
+
+        /* رأس الصفحة */
+        .mission-header {
+            background: linear-gradient(135deg, var(--camo-green), var(--camo-dark));
+            border: 2px solid var(--camo-light);
+            border-bottom: 4px solid var(--gold-star);
+            padding: 15px;
+            text-align: center;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .mission-header h1 {
+            margin: 0;
+            font-size: 22px;
+            color: var(--gold-star);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .mission-header p {
+            margin: 5px 0 0;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        /* الخريطة (Timeline) */
+        .tactical-map {
+            position: relative;
+            padding-right: 30px;
+        }
+
+        /* خط المسار العسكري */
+        .tactical-map::before {
+            content: '';
+            position: absolute;
+            right: 14px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--camo-light);
+            border-left: 1px dashed #000;
+            z-index: 1;
+        }
+
+        /* كارت المهمة */
+        .mission-card {
+            background: rgba(15, 20, 15, 0.95);
+            border: 1px solid var(--camo-light);
+            border-right: 5px solid var(--camo-light);
+            margin-bottom: 25px;
+            padding: 15px;
+            border-radius: 5px;
+            position: relative;
+            z-index: 2;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+            transition: all 0.2s ease;
+        }
+
+        .mission-card:active {
+            transform: scale(0.97);
+            border-right-color: var(--gold-star);
+        }
+
+        /* النقطة على الخط */
+        .mission-node {
+            position: absolute;
+            right: -42px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background: var(--camo-dark);
+            border: 3px solid var(--gold-star);
+            border-radius: 50%;
+            z-index: 3;
+            box-shadow: 0 0 10px var(--gold-star);
+        }
+
+        .mission-title {
+            font-size: 16px;
+            color: #fff;
+            margin: 0 0 5px 0;
+            font-weight: 800;
+        }
+
+        .mission-subtitle {
+            font-size: 12px;
+            color: #8fa382;
+        }
+
+        /* ------------------------------------- */
+        /* تصميم بطاقة النتيجة النهائية المميزة */
+        /* ------------------------------------- */
+        .mission-card.final-result-card {
+            border: 1px solid var(--gold-star);
+            border-right: 5px solid var(--gold-star);
+            background: linear-gradient(135deg, rgba(43, 58, 38, 0.95), rgba(15, 20, 15, 0.95));
+            box-shadow: 0 0 15px rgba(230, 194, 0, 0.3);
+            margin-top: 40px; /* مسافة لفصلها عن باقي العيادات */
+        }
+        
+        .mission-card.final-result-card:active {
+            border-right-color: #00e5ff;
+            box-shadow: 0 0 20px #00e5ff;
+        }
+
+        .final-node {
+            border-color: #00e5ff;
+            box-shadow: 0 0 15px #00e5ff;
+            background: var(--gold-star);
+        }
+        /* ------------------------------------- */
+
+        /* نافذة التلقين (الشرح المفصل) */
+        .dossier-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            overflow-y: auto;
+            backdrop-filter: blur(5px);
+        }
+
+        .dossier-content {
+            background: var(--camo-dark);
+            margin: 20px;
+            border: 2px solid var(--camo-light);
+            border-radius: 5px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,1);
+        }
+
+        .dossier-header {
+            background: var(--camo-green);
+            padding: 15px;
+            border-bottom: 2px solid var(--gold-star);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dossier-header h2 { margin: 0; color: var(--gold-star); font-size: 18px; }
+        
+        .close-btn {
+            color: white;
+            background: var(--alert-red);
+            border: none;
+            width: 30px;
+            height: 30px;
+            font-weight: bold;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .dossier-body {
+            padding: 20px;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #d0d0d0;
+        }
+
+        .dossier-body h3 { color: #fff; border-bottom: 1px dashed var(--camo-light); padding-bottom: 5px; margin-top: 15px; }
+        .dossier-body ul { padding-right: 20px; margin-top: 5px; }
+        .dossier-body li { margin-bottom: 8px; }
+
+        /* زر الجاهزية العسكري */
+        .btn-ready {
+            display: none;
+            width: calc(100% - 40px);
+            margin: 0 20px 20px 20px;
+            padding: 15px;
+            background: linear-gradient(to bottom, #d32f2f, #9a0007);
+            color: white;
+            border: 2px solid #ff6659;
+            font-family: 'Cairo', sans-serif;
+            font-size: 18px;
+            font-weight: 800;
+            text-transform: uppercase;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(211, 47, 47, 0.6);
+            animation: breathe 1.5s infinite alternate;
+        }
+
+        @keyframes breathe {
+            from { box-shadow: 0 0 10px rgba(211, 47, 47, 0.5); transform: scale(1); }
+            to { box-shadow: 0 0 25px rgba(211, 47, 47, 1); transform: scale(1.02); }
+        }
+
+        .tip-box {
+            background: rgba(230, 194, 0, 0.1);
+            border-right: 3px solid var(--gold-star);
+            padding: 10px;
+            margin-top: 15px;
+            font-size: 12px;
+            color: var(--gold-star);
+        }
+        
+        .alert-box {
+            background: rgba(211, 47, 47, 0.1);
+            border-right: 3px solid var(--alert-red);
+            padding: 10px;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #ff6659;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mission-header">
+        <h1>خريطة العيادات الطبية</h1>
+        <p>الدليل الشامل لاجتياز القومسيون الطبي العسكري</p>
+    </div>
+
+    <div class="tactical-map">
+        
+        <div class="mission-card" onclick="openDossier('measurements')">
+            <div class="mission-node"></div>
+            <h3 class="mission-title">1. قياس الطول والوزن</h3>
+            <div class="mission-subtitle">التناسق البدني وتحديد التناسق المبدئي</div>
+        </div>
+
+        <div class="mission-card" onclick="openDossier('eyes')">
+            <div class="mission-node"></div>
+            <h3 class="mission-title">2. عيادة الرمد (النظر)</h3>
+            <div class="mission-subtitle">قوة الإبصار، عمى الألوان، وقاع العين</div>
+        </div>
+
+        <div class="mission-card" onclick="openDossier('bones')">
+            <div class="mission-node"></div>
+            <h3 class="mission-title">3. عيادة العظام</h3>
+            <div class="mission-subtitle">التقوس، الفلات فوت، والكسور السابقة</div>
+        </div>
+
+        <div class="mission-card" onclick="openDossier('surgery')">
+            <div class="mission-node"></div>
+            <h3 class="mission-title">4. عيادة الجراحة</h3>
+            <div class="mission-subtitle">الفحص الشامل، العمليات، والبواسير</div>
+        </div>
+
+        <div class="mission-card" onclick="openDossier('ent')">
+            <div class="mission-node"></div>
+            <h3 class="mission-title">5. عيادة الأنف والأذن والحنجرة</h3>
+            <div class="mission-subtitle">السمع، طبلة الأذن، والحاجز الأنفي</div>
+        </div>
+
+        <div class="mission-card" onclick="openDossier('dental')">
+            <div class="mission-node"></div>
+            <h3 class="mission-title">6. عيادة الأسنان</h3>
+            <div class="mission-subtitle">تطابق الفكين، التسوس، والمظهر العام</div>
+        </div>
+
+        <div class="mission-card" onclick="openDossier('internal')">
+            <div class="mission-node"></div>
+            <h3 class="mission-title">7. عيادة الباطنة والقلب</h3>
+            <div class="mission-subtitle">نبضات القلب، رسم القلب، وضغط الدم</div>
+        </div>
+
+        <div class="mission-card" onclick="openDossier('derma')">
+            <div class="mission-node"></div>
+            <h3 class="mission-title">8. عيادة الجلدية</h3>
+            <div class="mission-subtitle">التعرق المفرط، الأمراض الجلدية المزمنة</div>
+        </div>
+
+        <div class="mission-card" onclick="openDossier('neuro')">
+            <div class="mission-node"></div>
+            <h3 class="mission-title">9. عيادة النفسية والعصبية</h3>
+            <div class="mission-subtitle">رعشة الأطراف، التلعثم، والثبات الانفعالي</div>
+        </div>
+
+        <div class="mission-card final-result-card" onclick="openDossier('finalResult')">
+            <div class="mission-node final-node"></div>
+            <h3 class="mission-title" style="color: #00e5ff;">📊 التقرير الطبي الشامل</h3>
+            <div class="mission-subtitle" style="color: var(--gold-star);">اضغط هنا لعرض تفاصيل النتيجة النهائية لجميع العيادات</div>
+        </div>
+
+    </div>
+
+    <div id="dossier" class="dossier-modal">
+        <div class="dossier-content">
+            <div class="dossier-header">
+                <h2 id="d-title">عنوان المهمة</h2>
+                <button class="close-btn" onclick="closeDossier()">X</button>
+            </div>
+            <div class="dossier-body" id="d-body">
+                </div>
+            
+            <button id="ready-btn" class="btn-ready" onclick="goSectionAction()">ابدأ محاكاة الكشف الآن 🎮</button>
+        </div>
+    </div>
+
+    <script>
+        // تم تفعيل الأزرار (hasReadyBtn: true) لجميع الأقسام
+        const missionData = {
+            'measurements': {
+                title: 'قياس الطول والوزن',
+                body: '<h3>ماذا يحدث داخل العيادة؟</h3><p>تعتبر المحطة الأولى، حيث يتم تجريد الطالب وقياس طوله ووزنه بدقة عبر أجهزة إلكترونية لضمان خضوعه للمقاييس العسكرية (الحد الأدنى للطول 170 سم للكليات، و158 سم للجوية).</p><h3>أشهر الأخطاء التي تسقط:</h3><ul><li>الوقوف بانحناء (يقلل من طولك).</li><li>تناول وجبات ثقيلة جداً قبل القياس مباشرة لزيادة الوزن.</li></ul><div class="tip-box">💡 نصيحة: قف مشدوداً تماماً، وارفع رأسك لتسجيل أقصى طول ممكن لك. تأكد من أن وزنك يتناسب مع طولك (الوزن المثالي = الطول - 100).</div>',
+                hasReadyBtn: true,
+                sectionId: 'p1'
+            },
+            'eyes': {
+                title: 'عيادة الرمد (النظر)',
+                body: '<h3>ماذا يحدث داخل العيادة؟</h3><p>من أهم العيادات. يتم فيها فحص حدة الإبصار (لوحة العلامات C)، واختبار عمى الألوان (دفتر ايشيهارا ذو الأرقام الملونة)، وفحص قاع العين لمعرفة وجود أي عمليات ليزك سابقة أو حول خفي.</p><h3>أشهر الأخطاء التي تسقط:</h3><ul><li>ارتداء عدسات لاصقة شفافة (يتم كشفها فوراً وتعطى غير لائق وتعتبر محاولة غش).</li><li>التوتر والتسرع في قراءة علامات لوحة النظر.</li></ul><div class="alert-box">⚠️ احذر: إذا أجريت عملية ليزك يجب مرور فترة كافية (ويفضل ذكر ذلك للجان الطبية إذا تم سؤالك). الكلية الجوية تتطلب نظر 6/6 بدون أي تساهل.</div>',
+                hasReadyBtn: true, 
+                sectionId: 'p2'
+            },
+            'bones': {
+                title: 'عيادة العظام',
+                body: '<h3>ماذا يحدث داخل العيادة؟</h3><p>يطلب منك الطبيب المشي بطرق معينة (على أطراف الأصابع، على الكعبين) للتحقق من عدم وجود "فلات فوت". يتم فحص التصاق الفخذين، تقوس الساقين، وتمدد الأذرع للتأكد من خلوك من أي تشوهات عظمية أو كسور قديمة أثرت على الحركة.</p><h3>أشهر الأخطاء التي تسقط:</h3><ul><li>الوقوف الخاطئ الذي يظهر الفخذين ملتصقين (يجب شد العضلات وترك مسافة بسيطة).</li><li>عدم القدرة على فرد الذراعين بالكامل.</li></ul><div class="tip-box">💡 نصيحة: تدرب على ضم قدميك مع محاولة شد ركبتيك للخلف قليلاً لتقليل مساحة التصاق الفخذين إن وجدت.</div>',
+                hasReadyBtn: false,
+                sectionId: 'p3'
+            },
+            'surgery': {
+                title: 'عيادة الجراحة',
+                body: '<h3>ماذا يحدث داخل العيادة؟</h3><p>يتم إجراء فحص جسدي شامل. يتأكد الطبيب من عدم وجود عمليات جراحية تعيق الحركة أو التدريب (مثل عمليات استئصال أجزاء حيوية)، كما يتم الكشف عن البواسير والفتق السري والإربي، ودوالي الخصية.</p><h3>أشهر الأخطاء التي تسقط:</h3><ul><li>إخفاء عمليات جراحية قديمة كبيرة (سيتم اكتشاف آثارها).</li><li>إهمال علاج دوالي الخصية المتقدمة أو البواسير قبل التقديم.</li></ul><div class="tip-box">💡 نصيحة: اهتم بالنظافة الشخصية بشكل كامل قبل هذا الكشف، وإذا كان لديك أثر جرح سطحي قديم فلا تقلق منه طالما لا يعيق الحركة.</div>',
+                hasReadyBtn: true,
+                sectionId: 'p4'
+            },
+            'ent': {
+                title: 'عيادة الأنف والأذن والحنجرة',
+                body: '<h3>ماذا يحدث داخل العيادة؟</h3><p>يتم فحص طبلة الأذن للتأكد من عدم وجود ثقوب، وفحص الأنف للتأكد من عدم وجود اعوجاج شديد في الحاجز الأنفي يعيق التنفس أثناء الجري، بالإضافة لاختبار سمع مبدئي (الهمس).</p><h3>أشهر الأخطاء التي تسقط:</h3><ul><li>عدم غسيل الأذن عند طبيب متخصص قبل الكشف، مما يمنع رؤية الطبلة (مما يضطرك للعودة في يوم آخر).</li><li>وجود ثقب في طبلة الأذن لم يتم علاجه.</li></ul><div class="tip-box">💡 نصيحة: اذهب لطبيب أنف وأذن قبل الكشف بيومين لعمل "غسيل أذن" وإزالة الشمع لتجنب أي تعقيدات أو تأجيل.</div>',
+                hasReadyBtn: true,
+                sectionId: 'p5'
+            },
+            'dental': {
+                title: 'عيادة الأسنان',
+                body: '<h3>ماذا يحدث داخل العيادة؟</h3><p>يتم فحص تطابق الفكين العلوى والسفلى (الضب)، والتأكد من عدم وجود تسوس عميق أو مظهر عام سيء للأسنان، وعدم فقدان عدد كبير من الأسنان الأمامية أو الضروس التي تؤثر على المضغ.</p><h3>أشهر الأخطاء التي تسقط:</h3><ul><li>إهمال جير الأسنان المتراكم أو التسوس الواضح باللون الأسود.</li><li>التقويم قد يسبب استبعاداً في بعض الكليات حسب تقدير الطبيب.</li></ul><div class="tip-box">💡 نصيحة: قم بزيارة طبيب أسنان لعمل جلسة تنظيف جير وحشو أي تسوس ظاهر قبل سحب الملف.</div>',
+                hasReadyBtn: true,
+                sectionId: 'p6'
+            },
+            'internal': {
+                title: 'عيادة الباطنة والقلب',
+                body: '<h3>ماذا يحدث داخل العيادة؟</h3><p>يقوم الطبيب بالسماعة بقياس ضربات القلب، وقياس ضغط الدم، والتحقق من عدم وجود تضخم في الكبد أو الطحال، ويتم عمل رسم قلب للتأكد من سلامة الصمامات والنبض.</p><h3>أشهر الأخطاء التي تسقط:</h3><ul><li><b>التوتر الشديد:</b> الخوف يرفع ضغط الدم ويزيد ضربات القلب بشكل ملحوظ، مما يعطيك تقييم "غير لائق" وأنت سليم تماماً!</li><li>شرب مشروبات طاقة أو قهوة بكثرة في صباح الكشف.</li></ul><div class="alert-box">⚠️ احذر: تنفس ببطء وعمق وحافظ على هدوئك تماماً أمام الطبيب حتى لا تتسارع ضربات قلبك.</div>',
+                hasReadyBtn: true,
+                sectionId: 'p7'
+            },
+            'derma': {
+                title: 'عيادة الجلدية',
+                body: '<h3>ماذا يحدث داخل العيادة؟</h3><p>فحص الجسم للتأكد من عدم وجود أمراض جلدية مزمنة أو معدية تعيق الحياة العسكرية. يتم الكشف عن (البهاق الواضح، الصدفية، حب الشباب المتكيس الشديد جداً، والتعرق المفرط في اليدين).</p><h3>أشهر الأخطاء التي تسقط:</h3><ul><li>محاولة إخفاء البهاق أو الوحمات الكبيرة بمساحيق تجميل.</li><li>فرك اليدين بكثرة مما يظهر تعرقاً مفرطاً نتيجة التوتر.</li></ul><div class="tip-box">💡 نصيحة: إذا كنت تعاني من حب شباب عادي أو آثار جروح بسيطة، فلا داعي للقلق فهي لا تعتبر سبباً للسقوط.</div>',
+                hasReadyBtn: true,
+                sectionId: 'p8'
+            },
+            'neuro': {
+                title: 'عيادة النفسية والعصبية',
+                body: '<h3>ماذا يحدث داخل العيادة؟</h3><p>يختبر الطبيب ثباتك الانفعالي والعصبي. يطلب منك مد يديك للأمام مفتوحتين لفحص ما إذا كان هناك "رعشة" في الأطراف. وقد يسألك أسئلة سريعة لاختبار التلعثم في الكلام أو التردد.</p><h3>أشهر الأخطاء التي تسقط:</h3><ul><li>رعشة اليدين الناتجة عن الخوف أو الإجهاد الشديد.</li><li>التهتهة أو التلعثم في نطق اسمك أو بياناتك بسبب الرهبة.</li></ul><div class="tip-box">💡 نصيحة: ثق بنفسك. قف ثابتاً، مد يديك بقوة بدون تشنج، وأجب عن الأسئلة بصوت واضح وعالي ومسموع.</div>',
+                hasReadyBtn: true,
+                sectionId: 'p9'
+            },
+            // تمت إضافة قسم النتيجة النهائية ليظهر في الـ Modal بشكل منظم
+            'finalResult': {
+                title: '📊 التقرير الطبي الشامل',
+                body: '<h3>مرحلة إعلان النتيجة</h3><p>بعد إتمام كافة الفحوصات في جميع العيادات الطبية، يتم تجميع التقييمات لإصدار القرار النهائي للياقتك الطبية العسكرية.</p><div class="tip-box">💡 هل أنت مستعد لاستعراض النتيجة الشاملة؟ اضغط على الزر بالأسفل للانتقال إلى قسم التقرير النهائي.</div>',
+                hasReadyBtn: true,
+                sectionId: 'p10'
+            }
+        };
+
+        let currentTargetSection = '';
+
+        function openDossier(id) {
+            const data = missionData[id];
+            document.getElementById('d-title').innerText = data.title;
+            document.getElementById('d-body').innerHTML = data.body;
+            
+            const readyBtn = document.getElementById('ready-btn');
+            if(data.hasReadyBtn) {
+                readyBtn.style.display = 'block';
+                // تغيير نص الزر للنتيجة النهائية ليكون مناسباً
+                if(id === 'finalResult') {
+                    readyBtn.innerText = 'عرض التقرير النهائي 📊';
+                } else {
+                    readyBtn.innerText = 'ابدأ محاكاة الكشف الآن 🎮';
+                }
+                currentTargetSection = data.sectionId;
+            } else {
+                readyBtn.style.display = 'none';
+                currentTargetSection = '';
+            }
+
+            document.getElementById('dossier').style.display = 'block';
+        }
+
+        function closeDossier() {
+            document.getElementById('dossier').style.display = 'none';
+        }
+
+        function goSectionAction() {
+            if (currentTargetSection !== '') {
+                // سيتم توجيه المستخدم للقسم الذي يحمل الآي دي المناسب
+                location.href = 'go:' + currentTargetSection;
+            }
+        }
+    </script>
+</body>
+</html>
