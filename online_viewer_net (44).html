@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>النتيجة النهائية - محاكاة الكشف الطبي العسكري</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@600;800&display=swap');
+
+        :root {
+            --camo-dark: #0f140f;
+            --camo-green: #2b3a26;
+            --camo-light: #4b5f43;
+            --alert-red: #d32f2f;
+            --gold-star: #e6c200;
+            --text-main: #e8ece6;
+            --cyan-tech: #00e5ff;
+            --grid-color: rgba(75, 95, 67, 0.2);
+        }
+
+        body {
+            background-color: var(--camo-dark);
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--text-main);
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 15px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* رأس الصفحة */
+        .mission-header {
+            background: linear-gradient(135deg, var(--camo-green), var(--camo-dark));
+            border: 2px solid var(--cyan-tech);
+            border-bottom: 4px solid var(--gold-star);
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.8);
+            margin-bottom: 20px;
+        }
+
+        .mission-header h1 { margin: 0; font-size: 24px; color: var(--gold-star); text-transform: uppercase; }
+        .mission-header p { margin: 5px 0 0; font-size: 13px; color: #aaa; }
+
+        /* صندوق التنبيه والتحفيز */
+        .disclaimer-box {
+            background: rgba(0, 229, 255, 0.05);
+            border-right: 4px solid var(--cyan-tech);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .disclaimer-box h3 { margin: 0 0 5px 0; color: var(--cyan-tech); font-size: 16px; }
+        .disclaimer-box p { margin: 0; font-size: 13px; color: #d0d0d0; }
+        
+        .motivation {
+            color: var(--gold-star);
+            font-weight: 800;
+            margin-top: 10px;
+            display: block;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        /* كروت النتائج */
+        .clinic-card {
+            background: rgba(15, 20, 15, 0.95);
+            border: 1px solid var(--camo-light);
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+
+        .clinic-info h4 { margin: 0; font-size: 16px; color: #fff; }
+        .clinic-info p { margin: 5px 0 0; font-size: 12px; color: #8fa382; }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            text-align: center;
+            min-width: 90px;
+        }
+
+        .status-fit { background: rgba(0, 255, 0, 0.1); color: #00ff00; border: 1px solid #00ff00; }
+        .status-unfit { background: rgba(211, 47, 47, 0.1); color: #ff4444; border: 1px solid var(--alert-red); }
+        .status-pending { background: rgba(255, 255, 255, 0.05); color: #aaa; border: 1px dashed #666; }
+
+        /* التقييم النهائي العام */
+        .final-verdict {
+            margin-top: 30px;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            background: #0a0d0a;
+            border: 2px solid #333;
+        }
+
+        .final-verdict.pass { border-color: #00ff00; box-shadow: 0 0 20px rgba(0,255,0,0.2); }
+        .final-verdict.fail { border-color: var(--alert-red); box-shadow: 0 0 20px rgba(211,47,47,0.2); }
+        .final-verdict.incomplete { border-color: var(--gold-star); }
+
+        .btn-action {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(to bottom, var(--camo-light), var(--camo-green));
+            color: white;
+            border: 2px solid var(--cyan-tech);
+            font-family: 'Cairo', sans-serif;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0,229,255,0.2);
+        }
+        .btn-action.danger {
+            border-color: var(--alert-red);
+            background: linear-gradient(to bottom, #8a1c1c, #4a0f0f);
+            box-shadow: 0 5px 15px rgba(211,47,47,0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="mission-header">
+            <h1>تقرير الكفاءة الطبية الشامل</h1>
+            <p>سجل الفرز النهائي لجميع عيادات القومسيون العسكري</p>
+        </div>
+
+        <div class="disclaimer-box">
+            <h3>⚠️ رسالة من القيادة (تنبيه هام)</h3>
+            <p>
+                يا بطل، هذه المنظومة هي <b>محاكاة افتراضية تدريبية</b> صُممت خصيصاً لكسر حاجز الخوف والرهبة لديك، وتثقيفك بالمعايير العسكرية الدقيقة المطلوبة داخل لجان الكشف الطبي. 
+                النتائج المعروضة هنا تعتمد على مدخلاتك الشخصية ولا تعتبر تشخيصاً طبياً رسمياً ولا تغني عن الفحص الحقيقي.
+            </p>
+            <span class="motivation">
+                "طريقك للبدلة العسكرية يبدأ بالثقة بالنفس، حافظ على هدوئك، استعد جيداً، وتذكر أن اللياقة الحقيقية تبدأ من انضباطك المسبق.. بالتوفيق يا وحش!" 🦅
+            </span>
+        </div>
+
+        <div id="clinics-container">
+            </div>
+
+        <div id="final-verdict-box" class="final-verdict incomplete">
+            <h2 id="final-title" style="margin: 0 0 10px; font-size: 20px; color: var(--gold-star);">جاري جمع البيانات...</h2>
+            <p id="final-desc" style="margin: 0; font-size: 14px; color: #ccc;">يجب إتمام فحص جميع العيادات لاستخراج الشهادة النهائية.</p>
+        </div>
+
+        <button class="btn-action" onclick="location.href='p0'">العودة للخريطة التكتيكية 🗺️</button>
+        <button class="btn-action danger" onclick="clearAllData()">مسح جميع السجلات والبدء من جديد 🗑️</button>
+
+    </div>
+
+    <script>
+        // الترتيب الرسمي للعيادات ومفاتيح التخزين المقابلة لها
+        const clinicsConfig = [
+            { id: "measurements", name: "قياس الطول والوزن (القوام)", key: "posture_sim_result" },
+            { id: "eyes", name: "عيادة الرمد (النظر والألوان)", key: "eye_sim_result" },
+            { id: "surgery", name: "النمط الهيكلي والجراحة", key: "surgery_precise_result" },
+            { id: "ent", name: "الأنف والأذن والحنجرة", key: "ent_precise_result" },
+            { id: "dental", name: "عيادة الأسنان", key: "dental_sim_result" },
+            { id: "internal", name: "الباطنة والقلب", key: "internal_sim_result" },
+            { id: "derma", name: "عيادة الجلدية", key: "derma_sim_result" },
+            { id: "psych", name: "النفسية والعصبية", key: "psych_sim_result" }
+        ];
+
+        function loadResults() {
+            const container = document.getElementById('clinics-container');
+            container.innerHTML = '';
+            
+            let totalClinics = clinicsConfig.length;
+            let testedClinics = 0;
+            let passedClinics = 0;
+            let failedClinics = 0;
+
+            clinicsConfig.forEach((clinic, index) => {
+                // محاولة جلب البيانات من LocalStorage
+                const rawData = localStorage.getItem(clinic.key);
+                let statusClass = 'status-pending';
+                let statusText = 'لم يُختبر بعد ⏱️';
+                let descText = 'اضغط على الخريطة للذهاب للعيادة';
+
+                if (rawData) {
+                    testedClinics++;
+                    const data = JSON.parse(rawData);
+                    
+                    // توحيد قراءة حالة اللياقة نظراً لاختلاف برمجة بعض العيادات (status مقابل isFit)
+                    let isPassed = false;
+                    
+                    if (data.status) {
+                        isPassed = data.status.includes('لائق');
+                    } else if (data.hasOwnProperty('isFit')) {
+                        isPassed = data.isFit;
+                    }
+
+                    if (isPassed) {
+                        passedClinics++;
+                        statusClass = 'status-fit';
+                        statusText = 'لائق عسكرياً 🟢';
+                        descText = data.timestamp || data.date || 'تم اجتياز المحاكاة بنجاح';
+                    } else {
+                        failedClinics++;
+                        statusClass = 'status-unfit';
+                        statusText = 'غير لائق ⚠️';
+                        descText = 'يوجد ملاحظات طبية تستدعي المراجعة';
+                    }
+                }
+
+                // إنشاء الكارت الخاص بالعيادة
+                const card = document.createElement('div');
+                card.className = 'clinic-card';
+                card.innerHTML = `
+                    <div class="clinic-info">
+                        <h4>${index + 1}. ${clinic.name}</h4>
+                        <p>${descText}</p>
+                    </div>
+                    <div class="status-badge ${statusClass}">
+                        ${statusText}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // تقييم النتيجة الكلية
+            const verdictBox = document.getElementById('final-verdict-box');
+            const verdictTitle = document.getElementById('final-title');
+            const verdictDesc = document.getElementById('final-desc');
+
+            if (testedClinics === 0) {
+                verdictBox.className = 'final-verdict incomplete';
+                verdictTitle.innerText = "لم تبدأ الفحص بعد";
+                verdictTitle.style.color = "var(--gold-star)";
+                verdictDesc.innerText = "توجه إلى الخريطة التكتيكية وابدأ بأول عيادة.";
+            } 
+            else if (testedClinics < totalClinics) {
+                verdictBox.className = 'final-verdict incomplete';
+                verdictTitle.innerText = `تم فحص (${testedClinics}/${totalClinics}) عيادات`;
+                verdictTitle.style.color = "var(--cyan-tech)";
+                verdictDesc.innerText = "استمر يا بطل، أكمل باقي المحطات لمعرفة نتيجتك النهائية.";
+            } 
+            else {
+                // تم فحص جميع العيادات
+                if (failedClinics === 0) {
+                    verdictBox.className = 'final-verdict pass';
+                    verdictTitle.innerText = "لائق طبيـــاً (جاهز للجنة) 🦅🟢";
+                    verdictTitle.style.color = "#00ff00";
+                    verdictDesc.innerText = "ألف مبروك! مؤشراتك في جميع محاكيات العيادات مطابقة للشروط العسكرية. استعن بالله، حافظ على هدوئك، وأنت مؤهل تماماً لاجتياز الكشف الحقيقي.";
+                } else {
+                    verdictBox.className = 'final-verdict fail';
+                    verdictTitle.innerText = "يحتاج إلى مراجعة طبية ⚠️";
+                    verdictTitle.style.color = "#ff4444";
+                    verdictDesc.innerText = `لقد حصلت على تقييم (غير لائق) في عدد ${failedClinics} عيادة. لا تقلق، اقرأ التوصيات في العيادات المذكورة وحاول معالجة الملاحظات قبل الذهاب للكشف الرسمي.`;
+                }
+            }
+        }
+
+        function clearAllData() {
+            if(confirm('هل أنت متأكد من مسح جميع نتائجك والبدء من الصفر؟')) {
+                clinicsConfig.forEach(clinic => {
+                    localStorage.removeItem(clinic.key);
+                });
+                loadResults();
+                alert('تم تصفير جميع السجلات بنجاح. استعد للمحاولة الجديدة!');
+            }
+        }
+
+        // تشغيل الدالة عند تحميل الصفحة
+        window.onload = loadResults;
+    </script>
+</body>
+</html>
