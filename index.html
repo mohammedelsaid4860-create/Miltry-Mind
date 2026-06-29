@@ -225,7 +225,7 @@
             {
                 categoryId: 'c_training', categoryName: 'ساحة التدريب', categoryIcon: 'fa-dumbbell',
                 items: [
-                    { id: 'cm12.html', name: 'معسكر الـ 90 يوم', icon: 'fa-calendar-check', desc: 'برنامج الإعداد البدني والمهام الشامل الشاق', featured: true, hasProgress: true },
+                    { id: 'cm12', name: 'معسكر الـ 90 يوم', icon: 'fa-calendar-check', desc: 'برنامج الإعداد البدني والمهام الشامل الشاق', featured: true, hasProgress: true },
                     { id: 'main1.2', name: 'التشريح العضلي', icon: 'fa-child-reaching', desc: 'تمارين مخصصة لاستهداف كل عضلة تفصيلياً', featured: false,comingSoon:true },
                     // تمت إضافة بطاقة الأرقام القياسية هنا
                     { id: 'main1.3', name: 'الأرقام القياسية', icon: 'fa-ranking-star', desc: 'اختبار أقصى عدد تكرارات (الضغط، العقلة، السكوات) لتقييم وتسجيل مستواك', featured: false }
@@ -475,7 +475,7 @@
                     
                     if (!item.comingSoon) {
                         card.onclick = function() {
-                            location.href =item.id; 
+                            location.href = item.id + '.html'; // تم تعديل هذا السطر وإضافة .html
                         };
                     }
                     
