@@ -153,6 +153,7 @@
         }
         .prog-motivation { font-size: 9px; color: var(--text-muted); margin-top: 5px; text-align: center; }
 
+        /* --- التعديلات الخاصة بقسم (قريباً) --- */
         .module-card.locked {
             opacity: 0.5;
             cursor: not-allowed;
@@ -205,6 +206,7 @@
         let currentCatIndex = 0; 
         let globalProgress = 0; 
 
+        // تم إضافة الأيقونات الجديدة هنا لضمان عملها أوفلاين
         const fallbackIcons = {
             'fa-dumbbell': '🏋️', 'fa-calendar-check': '📅', 'fa-child-reaching': '🧍', 
             'fa-crosshairs': '🎯', 'fa-fire': '🔥', 'fa-clipboard-list': '📋', 'fa-gift': '🎁',
@@ -225,6 +227,7 @@
                 items: [
                     { id: 'cm12', name: 'معسكر الـ 90 يوم', icon: 'fa-calendar-check', desc: 'برنامج الإعداد البدني والمهام الشامل الشاق', featured: true, hasProgress: true },
                     { id: 'main1.2', name: 'التشريح العضلي', icon: 'fa-child-reaching', desc: 'تمارين مخصصة لاستهداف كل عضلة تفصيلياً', featured: false,comingSoon:true },
+                    // تمت إضافة بطاقة الأرقام القياسية هنا
                     { id: 'main1.3', name: 'الأرقام القياسية', icon: 'fa-ranking-star', desc: 'اختبار أقصى عدد تكرارات (الضغط، العقلة، السكوات) لتقييم وتسجيل مستواك', featured: false }
                 ]
             },
@@ -240,11 +243,14 @@
                 items: [
                     { id: 'main3.5', name: 'اختيار الكلية العسكرية المناسبة', icon: 'fa-graduation-cap', desc: 'تحليل شامل لقدراتك ومؤهلاتك لتحديد الكلية العسكرية المثالية لطموحك', featured: true },
                     { id: 'main3.1', name: 'دليل الكليات والمعاهد', icon: 'fa-book-open', desc: 'دليلك الشامل لشروط القبول، طبيعة الدراسة، والمميزات بالكامل', featured: false },
+                    // تمت إضافة بطاقة المتخصصين هنا
                     { id: 'main3.6', name: 'دليل المتخصصين', icon: 'fa-briefcase', desc: 'شروط القبول والتخصصات المطلوبة لخريجي الجامعات والضباط المتخصصين', featured: false },
+                    // تمت إضافة بطاقة خريطة الكليات هنا (أفضل مكان لها لترتيب الخطوات)
                     { id: 'main3.7', name: 'خريطة الكليات والمعاهد', icon: 'fa-map-location-dot', desc: 'المواقع الجغرافية وعناوين الكليات العسكرية ومقرات سحب الملفات على الخريطة', featured: false },
                     { id: 'main3.2', name: 'محاكاة اختبارات القبول', icon: 'fa-brain', desc: 'اختبر جاهزيتك وتعرف على مراحل الاختبارات الحقيقية خطوة بخطوة', featured: false },
                     { id: 'main3.3', name: 'تكتيكات القبول', icon: 'fa-lightbulb', desc: 'نصائح ذهبية وتوجيهات حاسمة لتعزيز فرصك في اجتياز الاختبارات', featured: false },
                     { id: 'main3.4', name: 'إدارة الأزمات', icon: 'fa-triangle-exclamation', desc: 'توقع العقبات الميدانية والإدارية وتعرف على الحلول السريعة', featured: false },
+                    // تمت إضافة بطاقة الأقسام العسكرية هنا
                     { id: 'main3.8', name: 'الاقسام والتخصصات', icon: 'fa-scroll', desc: 'عبارة عن شرح لكل قسم داخل كل كلية عسكرية', featured: true }
                 ]
             },
@@ -469,7 +475,7 @@
                     
                     if (!item.comingSoon) {
                         card.onclick = function() {
-                            location.href = item.id + '.html';
+                            location.href = 'go:' + item.id; 
                         };
                     }
                     
@@ -554,7 +560,4 @@
         setInterval(loadUserData, 1500); 
     </script>
 </body>
-</html>                      
-
-
-        
+</html>
