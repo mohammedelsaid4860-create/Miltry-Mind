@@ -1,48 +1,40 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta name="monetag" content="1d0a7740c8a6e0ffadc8c6a8cddc1242">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MILITARY MIND</title>
-    <!-- خطوط وأيقونات أساسية -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>جاري التحضير...</title>
     <style>
-        body { background-color: #030406; color: #fff; font-family: sans-serif; margin: 0; padding: 0; }
-        .hud-header { background: #080a0f; padding: 20px; text-align: center; border-bottom: 2px solid #4b5320; }
-        .ad-container { background: #111; padding: 20px; margin: 20px; border: 1px solid #4b5320; text-align: center; border-radius: 10px; }
-        .modules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
-        .module-card { background: #151820; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #333; }
-        .btn-social { display: block; background: #4b5320; color: white; padding: 10px; margin: 5px; text-decoration: none; border-radius: 5px; }
+        body { background: #030406; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; font-family: sans-serif; }
+        button { padding: 15px 30px; font-size: 20px; background: #4b5320; color: white; border: none; border-radius: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <header class="hud-header">
-        <h1>MILITARY MIND</h1>
-    </header>
+    <h1>جاري تجهيز طلبك...</h1>
+    <button onclick="startChain()">اضغط للمتابعة</button>
 
-    <!-- مكان وضع إعلانات مونتاج -->
-    <div class="ad-container">
-        <p>مساحة إعلانية</p>
-        <!-- ضع كود إعلان مونتاج هنا -->
-    </div>
+    <script>
+        // هنا تضع الروابط الخاصة بك
+        const site1 = "https://www.google.com"; // الموقع الأول
+        const site2 = "https://www.bing.com";   // الموقع الثاني
 
-    <div class="modules-grid">
-        <div class="module-card">
-            <i class="fas fa-download"></i>
-            <h3>تحميل البرنامج</h3>
-        </div>
-        <div class="module-card">
-            <i class="fab fa-youtube"></i>
-            <h3>يوتيوب</h3>
-        </div>
-    </div>
+        function startChain() {
+            // تخزين الحالة في المتصفح عشان نعرف إحنا فين
+            localStorage.setItem('redirect_step', 'step1');
+            
+            // فتح الموقع الأول
+            window.location.href = site1;
+        }
 
-    <div style="padding: 20px;">
-        <a href="https://www.youtube.com" class="btn-social"><i class="fab fa-youtube"></i> رابط يوتيوب تجريبي</a>
-        <a href="https://www.tiktok.com" class="btn-social"><i class="fab fa-tiktok"></i> رابط تيك توك تجريبي</a>
-    </div>
-
+        // كود بسيط لاكتشاف عودة المستخدم
+        window.addEventListener('focus', () => {
+            if (localStorage.getItem('redirect_step') === 'step1') {
+                localStorage.setItem('redirect_step', 'step2');
+                // بعد العودة يفتح الموقع الثاني تلقائياً (سيحاول المتصفح حظره، لذا يفضل إظهار زر جديد)
+                alert("جاري الانتقال للخطوة التالية...");
+                window.location.href = site2;
+            }
+        });
+    </script>
 </body>
 </html>
