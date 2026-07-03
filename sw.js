@@ -1,6 +1,9 @@
 self.addEventListener('install', (e) => {
   e.waitUntil(
-    caches.open('military-store').then((cache) => cache.addAll(['/']))
+    caches.open('military-store').then((cache) => cache.addAll([
+      '/Miltry-Mind/',
+      '/Miltry-Mind/index.html'
+    ]))
   );
 });
 
