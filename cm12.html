@@ -1,8 +1,8 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>MILITARY COMMAND - ELITE UI</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Orbitron:wght@700&display=swap" rel="stylesheet">
@@ -21,7 +21,7 @@
 
         .svg-icon { display: inline-block; width: 1em; height: 1em; stroke-width: 2; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
 
-        .view { display: none; height: 100vh; overflow-y: auto; padding-bottom: 150px; animation: fadeIn 0.4s ease; }
+        .view { display: none; height: 100vh; overflow-y: auto; padding-bottom: 150px; -webkit-overflow-scrolling: touch; animation: fadeIn 0.4s ease; }
         .view.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -37,9 +37,9 @@
         .input-group input:focus { border-color: var(--weapon-color); box-shadow: 0 0 10px rgba(75, 83, 32, 0.5); }
         
         .weapon-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 20px 0; }
-        .w-card { background: #111; border: 1px solid #333; border-radius: 12px; padding: 15px 5px; text-align: center; cursor: pointer; transition: 0.3s; color: #666; display: flex; flex-direction: column; align-items: center; }
+        .w-card { background: #111; border: 1px solid #333; border-radius: 12px; padding: 15px 5px; text-align: center; cursor: pointer; transition: 0.3s; color: #666; display: flex; flex-direction: column; align-items: center; min-height: 75px; }
         .w-card .icon-holder { font-size: 22px; margin-bottom: 5px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
-        .w-card span { font-size: 10px; display: block; font-weight: bold; color: #888; width: 100%; }
+        .w-card span { font-size: 10px; display: block; font-weight: bold; color: #888; width: 100%; white-space: nowrap; }
         .w-card.selected { border-color: var(--weapon-color); background: rgba(255,255,255,0.05); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.5); color: var(--weapon-color); }
         .w-card.selected span { color: var(--weapon-color); text-shadow: 0 0 10px var(--weapon-color); }
 
@@ -79,6 +79,23 @@
         .video-box { display: none; background: #111; border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 20px; }
         .video-box iframe { width: 100%; height: 200px; border-radius: 8px; border: none; background: #000; }
 
+        .app-only-bar {
+            background: linear-gradient(45deg, var(--weapon-color), #111);
+            color: #fff;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 13px;
+            margin-top: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
         nav { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.95); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #222; z-index: 1000; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
         nav .nav-item { display: flex; flex-direction: column; align-items: center; color: #555; cursor: pointer; transition: 0.3s; }
         nav .nav-item .icon-holder { font-size: 22px; width: 22px; height: 22px; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; }
@@ -93,10 +110,9 @@
         .resume-card { width: 85%; max-width: 350px; background: #0a0b10; border: 2px solid var(--weapon-color); border-radius: 20px; padding: 25px; text-align: center; box-shadow: 0 0 30px rgba(0,0,0,1), inset 0 0 15px var(--weapon-color); animation: modalSlide 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
         @keyframes modalSlide { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .modal-header .icon-holder { font-size: 40px; color: var(--accent); margin-bottom: 15px; display: flex; justify-content: center; }
-        .modal-header h3 { font-family: 'Orbitron'; margin: 0; font-size: 18px; color: #fff; }
+        .modal-header h3 { font-family: 'Cairo'; margin: 0; font-size: 18px; color: #fff; font-weight: bold; }
         .modal-body { margin: 20px 0; border-top: 1px solid #222; border-bottom: 1px solid #222; padding: 15px 0; }
 
-        /* Connection Status Indicator */
         #conn-status { position: fixed; top: 15px; left: 15px; z-index: 2000; background: rgba(0,0,0,0.85); padding: 5px 12px; border-radius: 20px; border: 1px solid #333; display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: bold; transition: opacity 0.5s; }
         .conn-icon-holder { display: flex; align-items: center; font-size: 14px; }
     </style>
@@ -117,7 +133,10 @@
                     <div id="h-weapon" style="font-size:11px; color:var(--accent);">--</div>
                 </div>
             </div>
-            <div style="font-family:'Orbitron'; font-size:18px; color:#fff; background:#222; padding:5px 15px; border-radius:20px; border:1px solid #444;">??<span id="h-pts">0</span></div>
+            <div style="font-family:'Orbitron'; font-size:16px; color:#fff; background:#222; padding:5px 15px; border-radius:20px; border:1px solid #444; display:flex; align-items:center; gap:6px;">
+                <span id="h-coin-icon" style="display:flex; align-items:center;"></span>
+                <span id="h-pts">0</span>
+            </div>
         </div>
         <div class="stamina-bar"><div id="stamina-fill"></div></div>
     </div>
@@ -174,39 +193,32 @@
                 </div>
             </div>
             
-            <div style="display:flex; justify-content:center; gap:5px; margin-bottom:15px;">
-                <button class="btn-m" style="width:32%; background:#222; padding:12px 5px; font-size:12px;" onclick="toggleHelp()"><span id="ic-alert" style="margin-left:5px;"></span> تنبيه</button>
-                <button class="btn-m" style="width:32%; background:#222; padding:12px 5px; font-size:12px;" onclick="toggleVideo()"><span id="ic-video" style="margin-left:5px;"></span> فيديو</button>
-                <button class="btn-m" style="width:32%; background:#222; padding:12px 5px; font-size:12px;" onclick="goToDetailedHelp()"><span id="ic-details" style="margin-left:5px;"></span> مفصل</button>
+            <div style="display:flex; justify-content:center; gap:10px; margin-bottom:15px;">
+                <button class="btn-m" style="width:48%; background:#222; padding:12px 5px; font-size:13px;" onclick="toggleHelp()"><span id="ic-alert" style="margin-left:5px;"></span> تنبيه</button>
+                <button class="btn-m" style="width:48%; background:#222; padding:12px 5px; font-size:13px;" onclick="toggleVideo()"><span id="ic-video" style="margin-left:5px;"></span> فيديو</button>
             </div>
 
-            <div id="help-box" class="help-box">
+            <div class="app-only-bar">
+                <span id="ic-lock-banner"></span> الشرح المفصل متوفر داخل التطبيق فقط
+            </div>
+
+            <div id="help-box" class="help-box" style="margin-top:20px;">
                 <h3><span id="ic-clip"></span> خطوات التنفيذ الصحيحة:</h3>
                 <p id="help-desc"></p>
                 <button class="btn-m" style="margin-top:15px; padding:12px; background:var(--weapon-color);" onclick="resumeWorkout()">علم، تنفيذ!</button>
             </div>
 
-            <div id="video-box" class="video-box">
+            <div id="video-box" class="video-box" style="margin-top:20px;">
                 <iframe id="vid-player" src="" allowfullscreen></iframe>
                 <button class="btn-m" style="margin-top:15px; padding:12px; background:var(--weapon-color);" onclick="resumeWorkout()">فهمت، متابعة التدريب</button>
             </div>
 
-            <button class="btn-m" id="btn-main" onclick="handleStep()">بدء التنفيذ</button>
+            <button class="btn-m" id="btn-main" style="margin-top:20px;" onclick="handleStep()">بدء التنفيذ</button>
             
-            <div id="rest-ctrls" style="display:none; gap:10px;">
+            <div id="rest-ctrls" style="display:none; gap:10px; margin-top:20px;">
                 <button class="btn-m" style="background:#333; flex:1;" onclick="add15Sec()"><span id="ic-plus"></span> 15 ثانية</button>
                 <button class="btn-m" style="background:transparent; border:1px solid #555; color:#888; flex:1;" onclick="skipRest()">تخطي</button>
             </div>
-        </div>
-    </div>
-
-    <div id="view-reward" class="view">
-        <div style="padding:40px 20px; text-align:center;">
-            <div id="reward-main-icon" style="margin-bottom:20px; font-size: 50px; display: flex; justify-content: center;"></div>
-            <h2 style="font-family:'Orbitron'; color:#fff;">اكتملت المهمة!</h2>
-            <p style="color:#aaa; font-size:14px; margin-bottom:30px;">شاهد هذا الإعلان العسكري القصير لحفظ تقدمك والحصول على نقاط المكافأة كاملة.</p>
-            
-            <button class="btn-m" id="ad-btn" onclick="showRewardedAd()"><span id="ic-ad-btn"></span> شاهد الإعلان للحصول على المكافأة</button>
         </div>
     </div>
 
@@ -251,6 +263,7 @@
         </div>
     </div>
 
+    <!-- Resume Progress Modal -->
     <div id="resume-modal" class="modal-overlay">
         <div class="resume-card">
             <div class="modal-header">
@@ -269,6 +282,22 @@
                 <button class="btn-m" onclick="confirmResume(false)" style="background: transparent; border: 1px solid #444; color: #888;">
                     <span id="ic-modal-reset"></span> إعادة المهمة
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Central Military Alert/Confirm Modal System -->
+    <div id="custom-modal" class="modal-overlay">
+        <div class="resume-card" style="border-color: var(--weapon-color); max-width: 330px;">
+            <div class="modal-header">
+                <div id="custom-modal-icon" class="icon-holder" style="color: var(--accent); font-size: 36px; display: flex; justify-content: center; margin-bottom: 10px;"></div>
+                <h3 id="custom-modal-title">تنبيه عسكري</h3>
+            </div>
+            <div class="modal-body">
+                <p id="custom-modal-text" style="font-size: 14px; line-height: 1.7; margin: 0; white-space: pre-line; text-align: center;"></p>
+            </div>
+            <div class="modal-footer" id="custom-modal-buttons" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Filled dynamically by JavaScript -->
             </div>
         </div>
     </div>
@@ -298,7 +327,7 @@
             plus: `<svg viewBox="0 0 24 24" class="svg-icon"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`,
             gift: `<svg viewBox="0 0 24 24" class="svg-icon"><rect x="3" y="8" width="18" height="12" rx="2"></rect><line x1="12" y1="8" x2="12" y2="20"></line><line x1="3" y1="12" x2="21" y2="12"></line></svg>`,
             video: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M23 7l-7 5 7 5V7z"></path><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>`,
-            coins: `<svg viewBox="0 0 24 24" class="svg-icon" style="color:#ffd700;"><circle cx="12" cy="12" r="10"></circle><text x="12" y="16" font-size="12" font-weight="900" text-anchor="middle" fill="#ffd700">$</text></svg>`,
+            coins: `<svg viewBox="0 0 24 24" class="svg-icon" style="color:#ffd700; width:1.2em; height:1.2em;"><circle cx="12" cy="12" r="10"></circle><text x="12" y="16" font-size="12" font-weight="900" text-anchor="middle" fill="#ffd700">$</text></svg>`,
             rotate: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"></path></svg>`,
             power: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>`,
             radar: `<svg viewBox="0 0 24 24" class="svg-icon"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="12" x2="12" y2="2"></line></svg>`,
@@ -306,7 +335,8 @@
             map: `<svg viewBox="0 0 24 24" class="svg-icon"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon></svg>`,
             badge: `<svg viewBox="0 0 24 24" class="svg-icon"><rect x="4" y="4" width="16" height="16" rx="2"></rect><circle cx="12" cy="12" r="4"></circle></svg>`,
             wifi_on: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>`,
-            wifi_off: `<svg viewBox="0 0 24 24" class="svg-icon"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path><path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>`
+            wifi_off: `<svg viewBox="0 0 24 24" class="svg-icon"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path><path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>`,
+            lock: `<svg viewBox="0 0 24 24" class="svg-icon" style="width:14px; height:14px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`
         };
 
         const ONLINES = {
@@ -333,10 +363,11 @@
             power: "fas fa-power-off",
             radar: "fas fa-satellite",
             camp: "fas fa-campground",
-            map: "fas fa-map-marker-alt",
+            map: "fas fa-map",
             badge: "fas fa-id-badge",
             wifi_on: "fas fa-wifi",
-            wifi_off: "fas fa-wifi-slash"
+            wifi_off: "fas fa-wifi-slash",
+            lock: "fas fa-lock"
         };
 
         function getIcon(name) {
@@ -347,16 +378,54 @@
             }
         }
 
+        // Custom Modal UI Engine
+        function showCustomAlert(text, title = "تنبيه عسكري", iconName = "bullseye", callback = null) {
+            document.getElementById('custom-modal-title').innerText = title;
+            document.getElementById('custom-modal-text').innerText = text;
+            document.getElementById('custom-modal-icon').innerHTML = getIcon(iconName);
+            
+            const btnContainer = document.getElementById('custom-modal-buttons');
+            btnContainer.innerHTML = `<button class="btn-m" style="background: var(--weapon-color);" id="custom-modal-ok-btn">علم، تنفيذ</button>`;
+            
+            document.getElementById('custom-modal').style.display = 'flex';
+            
+            document.getElementById('custom-modal-ok-btn').onclick = () => {
+                document.getElementById('custom-modal').style.display = 'none';
+                if(callback) callback();
+            };
+        }
+
+        function showCustomConfirm(text, title, iconName, onConfirm, onCancel = null) {
+            document.getElementById('custom-modal-title').innerText = title;
+            document.getElementById('custom-modal-text').innerText = text;
+            document.getElementById('custom-modal-icon').innerHTML = getIcon(iconName);
+            
+            const btnContainer = document.getElementById('custom-modal-buttons');
+            btnContainer.innerHTML = `
+                <button class="btn-m" style="background: var(--weapon-color);" id="custom-confirm-yes">تأكيد الأمر</button>
+                <button class="btn-m" style="background: transparent; border: 1px solid #444; color: #888;" id="custom-confirm-no">تراجع</button>
+            `;
+            
+            document.getElementById('custom-modal').style.display = 'flex';
+            
+            document.getElementById('custom-confirm-yes').onclick = () => {
+                document.getElementById('custom-modal').style.display = 'none';
+                if(onConfirm) onConfirm();
+            };
+            
+            document.getElementById('custom-confirm-no').onclick = () => {
+                document.getElementById('custom-modal').style.display = 'none';
+                if(onCancel) onCancel();
+            };
+        }
+
         function setupStaticIcons() {
             document.getElementById('auth-main-logo').innerHTML = getIcon('crosshairs');
             document.getElementById('input-user-icon').innerHTML = getIcon('user');
             document.getElementById('ic-alert').innerHTML = getIcon('bullseye');
             document.getElementById('ic-video').innerHTML = getIcon('play');
-            document.getElementById('ic-details').innerHTML = getIcon('list');
             document.getElementById('ic-clip').innerHTML = getIcon('check');
             document.getElementById('ic-plus').innerHTML = getIcon('plus');
-            document.getElementById('reward-main-icon').innerHTML = getIcon('gift');
-            document.getElementById('ic-ad-btn').innerHTML = getIcon('video');
             document.getElementById('ic-profile-coins').innerHTML = getIcon('coins');
             document.getElementById('ic-reset').innerHTML = getIcon('rotate');
             document.getElementById('ic-logout').innerHTML = getIcon('power');
@@ -365,6 +434,8 @@
             document.getElementById('ic-modal-reset').innerHTML = getIcon('rotate');
             document.getElementById('ic-nav-map').innerHTML = getIcon('map');
             document.getElementById('ic-nav-profile').innerHTML = getIcon('badge');
+            document.getElementById('ic-lock-banner').innerHTML = getIcon('lock');
+            document.getElementById('h-coin-icon').innerHTML = getIcon('coins');
 
             const weapons = [
                 {k:'war', n:'حربية'}, {k:'navy', n:'بحرية'}, {k:'air', n:'جوية'}, {k:'police', n:'شرطة'},
@@ -401,127 +472,55 @@
 
         const dailyWorkouts = {
             1: [ 
-                {n: "ضغط عسكري واسع", v: 8, t: "rep", sec: "1s", desc: `1. ضع يديك أوسع من كتفيك بقليل.
-2. انزل بصدرك حتى يقترب من الأرض.
-3. ادفع بجسمك للأعلى بقوة مع فرد ذراعك تماماً.`, vid: "https://youtube.com/embed/TaSFAyTXPmo"},
-                {n: "ضغط الألماس (Diamond)", v: 6, t: "rep", sec: "2s", desc: `1. اجعل شكل يديك مثل الماسة تحت صدرك.
-2. انزل ببطء مع الحفاظ على كوعك قريباً من جسمك.
-3. ركز القوة في عضلة الترايسبس والصدر الداخلي.`, vid: "https://youtube.com/embed/6VvkALvXyis"},
-                {n: "غطس للترايسبس", v: 12, t: "rep", sec: "3s", desc: `1. استند على حافة كرسي أو سرير.
-2. انزل بحوضك لأسفل مع ثني كوعك بزاوية 90 درجة.
-3. ادفع للأعلى حتى تفرد ذراعك.`, vid: "https://youtube.com/embed/ugOtn6QEcLk"},
-                {n: "ضغط مائل (Incline)", v: 8, t: "rep", sec: "4s", desc: `1. ضع يديك على مكان مرتفع (سرير مثلاً).
-2. انزل بصدرك وادفع.
-3. هذا التمرين يركز على عضلة الصدر السفلية.`, vid: "https://youtube.com/embed/vRMolr_Wqbg"},
-                {n: "ضغط الثبات", v: 30, t: "sec", sec: "5s", desc: `1. اتخذ وضع الضغط العادي.
-2. انزل لمنتصف المسافة واثبت في مكانك.
-3. شد عضلات بطنك وصدرك بقوة.`, vid: "https://youtube.com/embed/Mpg9jsWQFA0"},
-                {n: "ركلات التراي خلفية", v: 12, t: "rep", sec: "6s", desc: `1. امسك وزناً خفيفاً أو زجاجة ماء.
-2. مِل بجذعك للأمام وافرد ذراعك للخلف تماماً.
-3. اعصر عضلة الترايسبس في نهاية الحركة.`, vid: "https://youtube.com/embed/haE4F19U8_Y"},
-                {n: "ضغط تكتيكي سريع", v: 30, t: "sec", sec: "7s", desc: `1. قم بأكبر عدد من الضغط السريع.
-2. لا يهم الأداء المثالي هنا، المهم هو ضخ الدم.
-3. استمر حتى تشعر بحرق في عضلاتك.`, vid: "https://youtube.com/embed/x1qgo2CuP2c"}
+                {n: "ضغط عسكري واسع", v: 8, t: "rep", sec: "1s", desc: `1. ضع يديك أوسع من كتفيك بقليل.\n2. انزل بصدرك حتى يقترب من الأرض.\n3. ادفع بجسمك للأعلى بقوة مع فرد ذراعك تماماً.`, vid: "https://youtube.com/embed/TaSFAyTXPmo"},
+                {n: "ضغط الألماس (Diamond)", v: 6, t: "rep", sec: "2s", desc: `1. اجعل شكل يديك مثل الماسة تحت صدرك.\n2. انزل ببطء مع الحفاظ على كوعك قريباً من جسمك.\n3. ركز القوة في عضلة الترايسبس والصدر الداخلي.`, vid: "https://youtube.com/embed/6VvkALvXyis"},
+                {n: "غطس للترايسبس", v: 12, t: "rep", sec: "3s", desc: `1. استند على حافة كرسي أو سرير.\n2. انزل بحوضك لأسفل مع ثني كوعك بزاوية 90 درجة.\n3. ادفع للأعلى حتى تفرد ذراعك.`, vid: "https://youtube.com/embed/ugOtn6QEcLk"},
+                {n: "ضغط مائل (Incline)", v: 8, t: "rep", sec: "4s", desc: `1. ضع يديك على مكان مرتفع (سرير مثلاً).\n2. انزل بصدرك وادفع.\n3. هذا التمرين يركز على عضلة الصدر السفلية.`, vid: "https://youtube.com/embed/vRMolr_Wqbg"},
+                {n: "ضغط الثبات", v: 30, t: "sec", sec: "5s", desc: `1. اتخذ وضع الضغط العادي.\n2. انزل لمنتصف المسافة واثبت في مكانك.\n3. شد عضلات بطنك وصدرك بقوة.`, vid: "https://youtube.com/embed/Mpg9jsWQFA0"},
+                {n: "ركلات التراي خلفية", v: 12, t: "rep", sec: "6s", desc: `1. امسك وزناً خفيفاً أو زجاجة ماء.\n2. مِل بجذعك للأمام وافرد ذراعك للخلف تماماً.\n3. اعصر عضلة الترايسبس في نهاية الحركة.`, vid: "https://youtube.com/embed/haE4F19U8_Y"},
+                {n: "ضغط تكتيكي سريع", v: 30, t: "sec", sec: "7s", desc: `1. قم بأكبر عدد من الضغط السريع.\n2. لا يهم الأداء المثالي هنا، المهم هو ضخ الدم.\n3. استمر حتى تشعر بحرق في عضلاتك.`, vid: "https://youtube.com/embed/x1qgo2CuP2c"}
             ],
             2: [ 
-                {n: "تجديف بالحقيبة", v: 12, t: "rep", sec: "1r", desc: `1. امسك حقيبة ظهر ثقيلة.
-2. مِل للأمام بظهر مفرود واسحب الحقيبة لبطنك.
-3. اعصر عضلات ظهرك في الأعلى.`, vid: "https://youtube.com/embed/3e4FBDNmfLc"},
-                {n: "بايسبس (حقيبة)", v: 12, t: "rep", sec: "2r", desc: `1. قف مفرود الظهر وامسك الحقيبة بيدك.
-2. ارفع يدك لكتفك مع تثبيت كوعك.
-3. انزل ببطء لتشعر بالمقاومة.`, vid: "https://youtube.com/embed/FjOmXlqOmow"},
-                {n: "سوبرمان (ظهر سفلي)", v: 15, t: "rep", sec: "3r", desc: `1. نم على بطنك مفرود الذراعين.
-2. ارفع صدرك وقدميك عن الأرض معاً.
-3. اثبت ثانية في الأعلى وانزل ببطء.`, vid: "https://youtube.com/embed/K8LSp6bn-VM"},
-                {n: "سحب المطرقة", v: 8, t: "rep", sec: "4r", desc: `1. امسك الحقيبة من الجانب بحيث يكون إبهامك للأعلى.
-2. ارفع الحقيبة لتشغيل عضلة الباي الخارجية والسواعد.
-3. حافظ على ثبات جسمك.`, vid: "https://youtube.com/embed/NnBVBVARGVU"},
-                {n: "المنشار (ذراع واحدة)", v: 8, t: "rep", sec: "5r", desc: `1. استند بيدك اليسرى على طاولة.
-2. اسحب الحقيبة بيدك اليمنى كأنك تشغل منشار.
-3. كرر للجانب الآخر بعد الانتهاء.`, vid: "https://youtube.com/embed/pVsnbLfIYYs"},
-                {n: "ثبات السحب", v: 40, t: "sec", sec: "6r", desc: `1. امسك الحقيبة واجعل ذراعك بزاوية 90 درجة.
-2. اثبت في مكانك مع شد الباي بقوة.
-3. تنفس بانتظام أثناء الثبات.`, vid: "https://youtube.com/embed/CEQ4YG8tTLs"}
+                {n: "تجديف بالحقيبة", v: 12, t: "rep", sec: "1r", desc: `1. امسك حقيبة ظهر ثقيلة.\n2. مِل للأمام بظهر مفرود واسحب الحقيبة لبطنك.\n3. اعصر عضلات ظهرك في الأعلى.`, vid: "https://youtube.com/embed/3e4FBDNmfLc"},
+                {n: "بايسبس (حقيبة)", v: 12, t: "rep", sec: "2r", desc: `1. قف مفرود الظهر وامسك الحقيبة بيدك.\n2. ارفع يدك لكتفك مع تثبيت كوعك.\n3. انزل ببطء لتشعر بالمقاومة.`, vid: "https://youtube.com/embed/FjOmXlqOmow"},
+                {n: "سوبرمان (ظهر سفلي)", v: 15, t: "rep", sec: "3r", desc: `1. نم على بطنك مفرود الذراعين.\n2. ارفع صدرك وقدميك عن الأرض معاً.\n3. اثبت ثانية في الأعلى وانزل ببطء.`, vid: "https://youtube.com/embed/K8LSp6bn-VM"},
+                {n: "سحب المطرقة", v: 8, t: "rep", sec: "4r", desc: `1. امسك الحقيبة من الجانب بحيث يكون إبهامك للأعلى.\n2. ارفع الحقيبة لتشغيل عضلة الباي الخارجية والسواعد.\n3. حافظ على ثبات جسمك.`, vid: "https://youtube.com/embed/NnBVBVARGVU"},
+                {n: "المنشار (ذراع واحدة)", v: 8, t: "rep", sec: "5r", desc: `1. استند بيدك اليسرى على طاولة.\n2. اسحب الحقيبة بيدك اليمنى كأنك تشغل منشار.\n3. كرر للجانب الآخر بعد الانتهاء.`, vid: "https://youtube.com/embed/pVsnbLfIYYs"},
+                {n: "ثبات السحب", v: 40, t: "sec", sec: "6r", desc: `1. امسك الحقيبة واجعل ذراعك بزاوية 90 درجة.\n2. اثبت في مكانك مع شد الباي بقوة.\n3. تنفس بانتظام أثناء الثبات.`, vid: "https://youtube.com/embed/CEQ4YG8tTLs"}
             ],
             3: [ 
-                {n: "سكوات عسكري", v: 12, t: "rep", sec: "1l", desc: `1. قدميك بعرض كتفيك.
-2. انزل بحوضك كأنك تجلس على كرسي خيالي.
-3. حافظ على ظهرك مستقيماً ونظرك للأمام.`, vid: "https://youtube.com/embed/g4j3NRWJQCA"},
-                {n: "طعن (Lunges)", v: 10, t: "rep", sec: "2l", desc: `1. خذ خطوة واسعة للأمام.
-2. انزل بركبتك الخلفية حتى تلمس الأرض تقريباً.
-3. ادفع بقدمك الأمامية لتعود لوضع الوقوف.`, vid: "https://youtube.com/embed/LT3cMpiq_8c"},
-                {n: "سكوات القفز", v: 12, t: "rep", sec: "3l", desc: `1. انزل في وضع السكوات.
-2. ادفع الأرض بكل قوتك لتقفز لأعلى.
-3. اهبط بليونة وكرر فوراً.`, vid: "https://youtube.com/embed/7mRFniLDn0g"},
-                {n: "ثبات الحائط", v: 45, t: "sec", sec: "4l", desc: `1. اسند ظهرك للحائط وانزل حتى تصبح فخذيك موازية للأرض.
-2. حافظ على هذه الوضعية.
-3. شد عضلات بطنك وأرجلك.`, vid: "https://youtube.com/embed/cZCkPImpGJk"},
-                {n: "رفع السمانة واقفاً", v: 15, t: "rep", sec: "5l", desc: `1. قف على أطراف أصابعك.
-2. انزل ببطء حتى تلمس كعوبك الأرض.
-3. كرر الحركة بسرعة متوسطة.`, vid: "https://youtube.com/embed/ew1KtqkoADs"},
-                {n: "مشي البطة", v: 30, t: "sec", sec: "6l", desc: `1. اتخذ وضع السكوات العميق.
-2. حاول المشي للأمام مع الحفاظ على انخفاض حوضك.
-3. تمرين جبار لقوة التحمل العضلية.`, vid: "https://youtube.com/embed/qM3GNLKI9rg?si=uLQ9BrGA0MKcqozB"}
+                {n: "سكوات عسكري", v: 12, t: "rep", sec: "1l", desc: `1. قدميك بعرض كتفيك.\n2. انزل بحوضك كأنك تجلس على كرسي خيالي.\n3. حافظ على ظهرك مستقيماً ونظرك للأمام.`, vid: "https://youtube.com/embed/g4j3NRWJQCA"},
+                {n: "طعن (Lunges)", v: 10, t: "rep", sec: "2l", desc: `1. خذ خطوة واسعة للأمام.\n2. انزل بركبتك الخلفية حتى تلمس الأرض تقريباً.\n3. ادفع بقدمك الأمامية لتعود لوضع الوقوف.`, vid: "https://youtube.com/embed/LT3cMpiq_8c"},
+                {n: "سكوات القفز", v: 12, t: "rep", sec: "3l", desc: `1. انزل في وضع السكوات.\n2. ادفع الأرض بكل قوتك لتقفز لأعلى.\n3. اهبط بليونة وكرر فوراً.`, vid: "https://youtube.com/embed/7mRFniLDn0g"},
+                {n: "ثبات الحائط", v: 45, t: "sec", sec: "4l", desc: `1. اسند ظهرك للحائط وانزل حتى تصبح فخذيك موازية للأرض.\n2. حافظ على هذه الوضعية.\n3. شد عضلات بطنك وأرجلك.`, vid: "https://youtube.com/embed/cZCkPImpGJk"},
+                {n: "رفع السمانة واقفاً", v: 15, t: "rep", sec: "5l", desc: `1. قف على أطراف أصابعك.\n2. انزل ببطء حتى تلمس كعوبك الأرض.\n3. كرر الحركة بسرعة متوسطة.`, vid: "https://youtube.com/embed/ew1KtqkoADs"},
+                {n: "مشي البطة", v: 30, t: "sec", sec: "6l", desc: `1. اتخذ وضع السكوات العميق.\n2. حاول المشي للأمام مع الحفاظ على انخفاض حوضك.\n3. تمرين جبار لقوة التحمل العضلية.`, vid: "https://youtube.com/embed/qM3GNLKI9rg"}
             ],
             4: [ 
-                {n: "ضغط مائل للأسفل (Decline)", v: 12, t: "rep", sec: "1b", desc: `1. ضع قدميك على سطح مرتفع (سرير أو كرسي).
-2. ضع يديك على الأرض وانزل بصدرك.
-3. ادفع للأعلى للتركيز على الصدر العلوي والأكتاف.`, vid: "https://youtube.com/embed/cxpoWu5caZo"},
-                {n: "رفرفة جانبية (زجاجات)", v: 12, t: "rep", sec: "2b", desc: `1. امسك زجاجتي ماء في يديك.
-2. ارفع ذراعيك للجانبين حتى مستوى كتفك.
-3. انزل ببطء، هذا التمرين يعطي عرضاً للكتف.`, vid: "https://youtube.com/embed/6IzeNkoxNX8"},
+                {n: "ضغط مائل للأسفل (Decline)", v: 12, t: "rep", sec: "1b", desc: `1. ضع قدميك على سطح مرتفع (سرير أو كرسي).\n2. ضع يديك على الأرض وانزل بصدرك.\n3. ادفع للأعلى للتركيز على الصدر العلوي والأكتاف.`, vid: "https://youtube.com/embed/cxpoWu5caZo"},
+                {n: "رفرفة جانبية (زجاجات)", v: 12, t: "rep", sec: "2b", desc: `1. امسك زجاجتي ماء في يديك.\n2. ارفع ذراعيك للجانبين حتى مستوى كتفك.\n3. انزل ببطء، هذا التمرين يعطي عرضاً للكتف.`, vid: "https://youtube.com/embed/6IzeNkoxNX8"},
                 {n: "بلانك (Plank)", v: 30, t: "sec", sec: "3b", desc: `1. استند على ساعديك وأطراف أصابع قدمك.
 2. اجعل جسمك مستقيماً تماماً كلوح الخشب.
 3. اشفط بطنك للداخل واثبت.`, vid: "https://youtube.com/embed/BeQerYhwz98"},
-                {n: "Sit ups (بيدين متقاطعتين)", v: 12, t: "rep", sec: "4b", desc: `1. نم على ظهرك واثنِ ركبتيك.
-2. قاطع يديك على صدرك.
-3. ارفع جذعك بالكامل حتى تلمس ركبتيك بمرفقيك.`, vid: "https://youtube.com/embed/_mO_GlkjM6g"},
-                {n: "رفع الساقين", v: 8, t: "rep", sec: "5b", desc: `1. نم على ظهرك وضع يديك تحت حوضك.
-2. ارفع ساقيك مفرودتين حتى زاوية 90 درجة.
-3. انزل بهما ببطء دون أن يلمسا الأرض.`, vid: "https://youtube.com/embed/_PfN19TC4Zc"},
-                {n: "تسلق الجبال", v: 30, t: "sec", sec: "6b", desc: `1. وضع الضغط العالي.
-2. حرك ركبتك اليمنى لصدرك ثم اليسرى بسرعة.
-3. حافظ على ثبات ظهرك أثناء الحركة.`, vid: "https://youtube.com/embed/AhgK90G_4xk"}
+                {n: "Sit ups (بيدين متقاطعتين)", v: 12, t: "rep", sec: "4b", desc: `1. نم على ظهرك واثنِ ركبتيك.\n2. قاطع يديك على صدرك.\n3. ارفع جذعك بالكامل حتى تلمس ركبتيك بمرفقيك.`, vid: "https://youtube.com/embed/_mO_GlkjM6g"},
+                {n: "رفع الساقين", v: 8, t: "rep", sec: "5b", desc: `1. نم على ظهرك وضع يديك تحت حوضك.\n2. ارفع ساقيك مفرودتين حتى زاوية 90 درجة.\n3. انزل بهما ببطء دون أن يلمسا الأرض.`, vid: "https://youtube.com/embed/_PfN19TC4Zc"},
+                {n: "تسلق الجبال", v: 30, t: "sec", sec: "6b", desc: `1. وضع الضغط العالي.\n2. hرك ركبتك اليمنى لصدرك ثم اليسرى بسرعة.\n3. حافظ على ثبات ظهرك أثناء الحركة.`, vid: "https://youtube.com/embed/AhgK90G_4xk"}
             ],
             5: [ 
-                {n: "بيربيز (Burpees)", v: 12, t: "rep", sec: "1c", desc: `1. اقفز للأعلى ثم انزل لوضع الضغط.
-2. افعل ضغطة واحدة ثم اقفز مرة أخرى.
-3. التمرين الأهم لحرق الدهون وتقوية القلب.`, vid: "https://youtube.com/embed/pRrceqq7pwE"},
-                {n: "ضغط عادي", v: 12, t: "rep", sec: "2c", desc: `1. ضع يديك بعرض كتفيك.
-2. انزل بصدرك حتى يقترب من الأرض.
-3. ادفع بقوة للأعلى لتدريب الصدر والترايسبس.`, vid: "https://youtube.com/embed/x1qgo2CuP2c"},
-                {n: "سكوات عميق + ركلة", v: 12, t: "rep", sec: "3c", desc: `1. انزل سكوات وعند الوقوف اركل للأمام بقوة.
-2. بادل بين الساقين.
-3. تمرين ممتاز للجزء السفلي والبطن.`, vid: "https://youtube.com/embed/Mtk1Wgz__JA"},
-                {n: "الزحف العسكري", v: 30, t: "sec", sec: "4c", desc: `1. انزل على ساعديك وأطراف قدمك.
-2. حاول الزحف للأمام ببطء وبخطوات صغيرة.
-3. شد جسمك بالكامل كأنك تحت نيران العدو.`, vid: "https://youtube.com/embed/RG3ik4VacAA?si=THT3HDocbiem7QiY"},
-                {n: "قفز النجمة", v: 45, t: "sec", sec: "5c", desc: `1. اقفز مع فتح ذراعيك وقدميك.
-2. عد للوضع الأصلي فوراً.
-3. استمر برتم سريع لرفع الحرق.`, vid: "https://youtube.com/embed/efWaGPXEx1k"}
+                {n: "بيربيز (Burpees)", v: 12, t: "rep", sec: "1c", desc: `1. اقفز للأعلى ثم انزل لوضع الضغط.\n2. افعل ضغطة واحدة ثم اقفز مرة أخرى.\n3. التمرين الأهم لحرق الدهون وتقوية القلب.`, vid: "https://youtube.com/embed/pRrceqq7pwE"},
+                {n: "ضغط عادي", v: 12, t: "rep", sec: "2c", desc: `1. ضع يديك بعرض كتفيك.\n2. انزل بصدرك حتى يقترب من الأرض.\n3. ادفع بقوة للأعلى لتدريب الصدر والترايسبس.`, vid: "https://youtube.com/embed/x1qgo2CuP2c"},
+                {n: "سكوات عميق + ركلة", v: 12, t: "rep", sec: "3c", desc: `1. انزل سكوات وعند الوقوف اركل للأمام بقوة.\n2. بادل بين الساقين.\n3. تمرين ممتاز للجزء السفلي والبطن.`, vid: "https://youtube.com/embed/Mtk1Wgz__JA"},
+                {n: "الزحف العسكري", v: 30, t: "sec", sec: "4c", desc: `1. انزل على ساعديك وأطراف قدمك.\n2. حاول الزحف للأمام ببطء وبخطوات صغيرة.\n3. شد جسمك بالكامل كأنك تحت نيران العدو.`, vid: "https://youtube.com/embed/RG3ik4VacAA"},
+                {n: "قفز النجمة", v: 45, t: "sec", sec: "5c", desc: `1. اقفز مع فتح ذراعيك وقدميك.\n2. عد للوضع الأصلي فوراً.\n3. استمر برتم سريع لرفع الحرق.`, vid: "https://youtube.com/embed/efWaGPXEx1k"}
             ],
             6: [ 
-                {n: "بلانك (Plank)", v: 30, t: "sec", sec: "3b", desc: `1. استند على ساعديك وأطراف أصابع قدمك.
-2. اجعل جسمك مستقيماً تماماً كلوح الخشب.
-3. اشفط بطنك للداخل واثبت.`, vid: "https://youtube.com/embed/BeQerYhwz98"},
-                {n: "رفع الساقين", v: 12, t: "rep", sec: "5b", desc: `1. نم على ظهرك وضع يديك تحت حوضك.
-2. ارفع ساقيك مفرودتين حتى زاوية 90 درجة.
-3. انزل بهما ببطء.`, vid: "https://youtube.com/embed/_PfN19TC4Zc"},
-                {n: "تسلق الجبال", v: 30, t: "sec", sec: "6b", desc: `1. اتخذ وضع الضغط.
-2. حرك ركبتك اليمنى لصدرك ثم اليسرى بسرعة.
-3. حافظ على ثبات ظهرك.`, vid: "https://youtube.com/embed/AhgK90G_4xk"},
-                {n: "رفع الحوض", v: 12, t: "rep", sec: "5f", desc: `1. نم على ظهرك واثنِ ركبتيك وضع قدميك على الأرض.
-2. ارفع حوضك للأعلى حتى يصبح جسمك في خط مستقيم.
-3. اعصر عضلات المؤخرة واثبت لثانية.`, vid: "https://youtube.com/embed/RXgcvPMBSiw"},
-                {n: "روسين تويست", v: 10, t: "sec", sec: "4f", desc: `1. اجلس واثنِ ركبتيك وارفع قدميك قليلاً عن الأرض.
-2. مِل بظهرك للخلف قليلاً.
-3. لف جذعك ولمس الأرض بيديك يميناً ويساراً.`, vid: "https://youtube.com/embed/danwOyNumDA"},
-                {n: "بلانك جانبي يمين", v: 30, t: "sec", sec: "6f", desc: `1. استند على ساعدك الأيمن وجانب قدمك اليمنى.
-2. ارفع حوضك ليكون جسمك مستقيماً.
-3. اثبت على هذا الوضع.`, vid: "https://youtube.com/embed/SNUImK7E8KI?si=Su6P0qAjB-1v12U8"},
-                {n: "بلانك جانبي شمال", v: 30, t: "sec", sec: "7f", desc: `1. استند على ساعدك الأيسر وجانب قدمك اليسرى.
-2. ارفع حوضك ليكون جسمك مستقيماً.
-3. اثبت على هذا الوضع.`, vid: "https://youtube.com/embed/SNUImK7E8KI?si=Su6P0qAjB-1v12U8"}
+                {n: "بلانك (Plank)", v: 30, t: "sec", sec: "3b", desc: `1. استند على ساعديك وأطراف أصابع قدمك.\n2. اجعل جسمك مستقيماً تماماً كلوح الخشب.\n3. اشفط بطنك للداخل واثبت.`, vid: "https://youtube.com/embed/BeQerYhwz98"},
+                {n: "رفع الساقين", v: 12, t: "rep", sec: "5b", desc: `1. نم على ظهرك وضع يديك تحت حوضك.\n2. ارفع ساقيك مفرودتين حتى زاوية 90 درجة.\n3. انزل بهما ببطء.`, vid: "https://youtube.com/embed/_PfN19TC4Zc"},
+                {n: "تسلق الجبال", v: 30, t: "sec", sec: "6b", desc: `1. اتخذ وضع الضغط.\n2. حرك ركبتك اليمنى لصدرك ثم اليسرى بسرعة.\n3. حافظ على ثبات ظهرك.`, vid: "https://youtube.com/embed/AhgK90G_4xk"},
+                {n: "رفع الحوض", v: 12, t: "rep", sec: "5f", desc: `1. نم على ظهرك واثنِ ركبتيك وضع قدميك على الأرض.\n2. ارفع حوضك للأعلى حتى يصبح جسمك في خط مستقيم.\n3. اعصر عضلات المؤخرة واثبت لثانية.`, vid: "https://youtube.com/embed/RXgcvPMBSiw"},
+                {n: "روسين تويست", v: 10, t: "sec", sec: "4f", desc: `1. اجلس واثنِ ركبتيك وارفع قدميك قليلاً عن الأرض.\n2. مِل بظهرك للخلف قليلاً.\n3. لف جذعك ولمس الأرض بيديك يميناً ويساراً.`, vid: "https://youtube.com/embed/danwOyNumDA"},
+                {n: "بلانك جانبي يمين", v: 30, t: "sec", sec: "6f", desc: `1. استند على ساعدك الأيمن وجانب قدمك اليمنى.\n2. ارفع حوضك ليكون جسمك مستقيماً.\n3. اثبت على هذا وضع.`, vid: "https://youtube.com/embed/SNUImK7E8KI"},
+                {n: "بلانك جانبي شمال", v: 30, t: "sec", sec: "7f", desc: `1. استند على ساعدك الأيسر وجانب قدمك اليسرى.\n2. ارفع حوضك ليكون جسمك مستقيماً.\n3. اثبت على هذا وضع.`, vid: "https://youtube.com/embed/SNUImK7E8KI"}
             ]
         };
 
@@ -576,10 +575,24 @@
             if(savedData) {
                 uData = JSON.parse(savedData);
                 initSession();
+                history.replaceState({ viewId: 'view-map' }, "");
             } else {
                 document.getElementById('view-auth').classList.add('active');
+                history.replaceState({ viewId: 'view-auth' }, "");
             }
         };
+
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.viewId) {
+                switchView(event.state.viewId, null, true);
+            } else {
+                if (uData) {
+                    switchView('view-map', document.querySelectorAll('.nav-item')[0], true);
+                } else {
+                    switchView('view-auth', null, true);
+                }
+            }
+        });
 
         document.addEventListener("visibilitychange", () => {
             if (document.hidden) {
@@ -595,7 +608,9 @@
 
         function handleAuth() {
             const name = document.getElementById('reg-name').value;
-            if(!name || name.trim() === '') return alert("الرجاء إدخال الاسم العسكري بالكامل");
+            if(!name || name.trim() === '') {
+                return showCustomAlert("الرجاء إدخال الاسم العسكري بالكامل للانضمام للخدمة.", "خطأ في التوثيق", "bullseye");
+            }
             
             uData = { name: name, weapon: selWep, points: 0, completed: [0] };
             saveData();
@@ -611,13 +626,13 @@
         function saveData() { localStorage.setItem('militaryOS_user', JSON.stringify(uData)); }
 
         function logOut() {
-            if(confirm("هل أنت متأكد من تسجيل الخروج؟ سيتم حفظ تقدمك على هذا الجهاز.")) {
+            showCustomConfirm("هل أنت متأكد من تسجيل الخروج وإنهاء الخدمة؟ سيتم الاحتفاظ بملفك محلياً على هذا الجهاز.", "إنهاء الخدمة العسكرية", "power", () => {
                 if(timer) { clearInterval(timer); timer = null; }
                 uData = null;
                 document.getElementById('hud').style.display = 'none';
                 document.getElementById('navbar').style.display = 'none';
                 switchView('view-auth');
-            }
+            });
         }
 
         function syncUI() {
@@ -633,12 +648,14 @@
             document.getElementById('h-weapon').innerText = wInfo.n;
             document.getElementById('h-icon').innerHTML = getIcon(wInfo.i);
             document.getElementById('h-pts').innerText = uData.points;
+            document.getElementById('h-coin-icon').innerHTML = getIcon('coins');
             
             document.getElementById('p-name').innerText = uData.name;
             document.getElementById('p-rank').innerText = rList[rIdx];
             document.getElementById('p-weapon').innerText = wInfo.n;
             document.getElementById('p-pts').innerText = uData.points;
             document.getElementById('p-icon').innerHTML = getIcon(wInfo.i);
+            document.getElementById('ic-profile-coins').innerHTML = getIcon('coins');
             
             if (uData.currentSession) {
                 document.getElementById('p-stage').innerHTML = `المهمة ${uData.completed.length} <span style="color:var(--accent); font-size:10px;">(قيد التنفيذ)</span>`;
@@ -666,12 +683,12 @@
                 const div = document.createElement('div');
                 div.className = `node ${isDone?'done':''} ${isCurrent?'active':''}`;
                 div.id = `mission-${i}`;
-                div.innerHTML = i%7===0 ? `<div style="font-size: 26px;">${getIcon('camp')}</div>` : i;
+                div.innerHTML = i%7===0 ? `<div style="font-size: 26px; display:flex;">${getIcon('camp')}</div>` : i;
                 
                 div.onclick = () => { 
                     if(isCurrent) { startMission(i); } 
-                    else if(isDone) { alert("أتممت هذه المهمة مسبقاً! واصل تقدمك."); } 
-                    else { alert("أتمم المهام السابقة أولاً للوصول لهذه النقطة."); }
+                    else if(isDone) { showCustomAlert("لقد أتممت هذه المهمة العسكرية مسبقاً بنجاح! تابع تقدمك في العمليات الحالية.", "مهمة منتهية", "check"); } 
+                    else { showCustomAlert("خطوط الإمداد مقفولة! يجب عليك إتمام كافة المهام السابقة لفتح هذا النطاق القتالي.", "منطقة عسكرية محظورة", "radar"); }
                 };
                 cont.appendChild(div);
             }
@@ -705,12 +722,14 @@
             if(id % 7 === 0) {
                 if(isFinalizing || uData.completed.includes(id)) return;
                 isFinalizing = true;
-                alert("معسكر راحة! حصلت على 2000 نقطة استرداد لياقة.");
-                uData.points += 2000;
-                uData.completed.push(id);
-                saveData();
-                syncUI();
-                isFinalizing = false;
+                
+                showCustomAlert("دخلت معسكر الاستراحة والإعاشة التدريبية!\nتم منحك +2000 نقطة قوة استرداد لياقة كاملة بدون تدريبات.", "معسكر راحة تكتيكي", "camp", () => {
+                    uData.points += 2000;
+                    uData.completed.push(id);
+                    saveData();
+                    syncUI();
+                    isFinalizing = false;
+                });
                 return;
             }
             
@@ -914,19 +933,6 @@
             isPaused = true;
         }
 
-        function goToDetailedHelp() {
-            const dayNum = ((activeId-1)%7)+1;
-            const routine = dailyWorkouts[dayNum];
-            const ex = routine[curEx];
-            
-            if(ex.sec && ex.sec !== "SectionName") {
-                isPaused = true;
-                location.href = 'go:' + ex.sec;
-            } else {
-                alert("تحذير: لم يتم ربط قسم الشرح المفصل لهذا التمرين بعد.");
-            }
-        }
-
         function resumeWorkout() {
             document.getElementById('help-box').style.display = 'none';
             document.getElementById('video-box').style.display = 'none';
@@ -950,47 +956,36 @@
             document.getElementById('ex-progress-fill').style.width = "100%";
             document.getElementById('ex-progress-pct').innerText = "100%";
             delete uData.currentSession;
+            
+            isFinalizing = true;
+            const bonus = 1200 + (activeId * 50);
+            uData.points += bonus;
+            uData.completed.push(activeId);
             saveData();
+            syncUI();
             
-            switchView('view-reward');
-        }
-
-        function showRewardedAd() {
-            document.getElementById('ad-btn').innerText = "جاري عرض الإعلان...";
-            document.getElementById('ad-btn').disabled = true;
-            location.href='go:558';
-            
-            setTimeout(() => {
-                isFinalizing = true;
-                const bonus = 1200 + (activeId*50);
-                uData.points += bonus;
-                uData.completed.push(activeId);
-                saveData();
-                syncUI();
-         
-                alert("تم استلام المكافأة بنجاح! + " + bonus + " نقطة.");
+            showCustomAlert(`أحسنت أيها البطل! تم حفظ إكمال المهمة رقم ${activeId} بنجاح ومزامنة السجلات الفنية.\nالمكافأة المكتسبة: +${bonus} نقطة خبرة قتالية.`, "اكتملت المهمة بنجاح!", "gift", () => {
                 isFinalizing = false;
-                
-                document.getElementById('ad-btn').innerText = "شاهد الإعلان للحصول على المكافأة";
-                document.getElementById('ad-btn').disabled = false;
                 switchView('view-map', document.querySelectorAll('.nav-item')[0]);
-            }, 2500); 
+            });
         }
 
         function resetProgress() {
-            if(confirm("تحذير عسكري: هل أنت متأكد من تصفير كافة بياناتك والعودة لنقطة الصفر؟ لا يمكن التراجع عن هذا القرار!")) {
+            showCustomConfirm("تحذير قتالي مشدد: هل أنت متأكد من تصفير وإعادة تعيين كافة البيانات العسكرية والعودة لرتبة طالب؟ لا يمكن التراجع عن هذا القرار لاحقاً!", "إعادة تعيين الهوية العسكرية", "rotate", () => {
                 if(timer) { clearInterval(timer); timer = null; }
                 uData.points = 0;
                 uData.completed = [0];
                 delete uData.currentSession;
                 saveData();
                 syncUI();
-                alert("تمت إعادة التعيين لـ طالب بنجاح.");
-                switchView('view-map', document.querySelectorAll('.nav-item')[0]);
-            }
+                
+                showCustomAlert("تم مسح الملف التدريبي وعودتك لرتبة طالب بنجاح.", "تمت إعادة التعيين", "check", () => {
+                    switchView('view-map', document.querySelectorAll('.nav-item')[0]);
+                });
+            });
         }
 
-        function switchView(id, navEl) {
+        function switchView(id, navEl, isBack = false) {
             if (id !== 'view-workout') {
                 if(timer) {
                     clearInterval(timer);
@@ -999,10 +994,18 @@
                 isPaused = false;
             }
 
+            const activeView = document.querySelector('.view.active');
+            const currentId = activeView ? activeView.id : null;
+
+            if (!isBack && currentId && currentId !== id) {
+                history.pushState({ viewId: id }, "");
+            }
+
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             
-            document.getElementById('hud').style.display = (id === 'view-map') ? 'block' : 'none';
+            document.getElementById('hud').style.display = (id === 'view-map' || id === 'view-profile' || id === 'view-workout') ? 'block' : 'none';
+            if(id === 'view-auth') document.getElementById('hud').style.display = 'none';
             
             if(document.getElementById('vid-player')) {
                 const iframe = document.getElementById('vid-player');
@@ -1012,6 +1015,10 @@
             if(navEl) {
                 document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
                 navEl.classList.add('active');
+            } else {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                if(id === 'view-map') document.querySelectorAll('.nav-item')[0]?.classList.add('active');
+                if(id === 'view-profile') document.querySelectorAll('.nav-item')[1]?.classList.add('active');
             }
             if(id === 'view-map') setTimeout(focusMission, 400);
         }
