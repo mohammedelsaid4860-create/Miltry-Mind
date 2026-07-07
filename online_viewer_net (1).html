@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>الميادين القتالية - النظام المتكامل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0c0d0c; --surface: #1a1d1a; --primary: #4b5320; /* سيتم تغييره برمجيا حسب السلاح */
+            --accent: #ffd700; --text-light: #f5f5f5; --text-muted: #999;
+            --danger: #b32424; --success: #27ae60; --border: #2c332c;
+        }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        body { margin: 0; font-family: 'Cairo', sans-serif; background-color: var(--bg-main); color: var(--text-light); overflow-x: hidden; padding-bottom: 75px; }
+        
+        .svg-icon { display: inline-block; width: 1em; height: 1em; stroke-width: 2; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+        
+        /* مؤشر الاتصال */
+        #conn-status { position: fixed; top: 15px; left: 15px; z-index: 7000; background: rgba(0,0,0,0.85); padding: 5px 12px; border-radius: 20px; border: 1px solid #333; display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: bold; transition: opacity 0.5s; }
+        .conn-icon-holder { display: flex; align-items: center; font-size: 14px; }
+
+        /* شريط التنقل السفلي */
+        .nav { display: flex; justify-content: space-around; background-color: var(--surface); position: fixed; bottom: 0; width: 100%; box-shadow: 0 -5px 20px rgba(0,0,0,0.7); z-index: 100; border-top: 2px solid var(--primary); height: 65px; }
+        .nav button { background: none; border: none; color: var(--text-muted); font-size: 11px; cursor: pointer; flex: 1; font-family: 'Cairo'; font-weight: 700; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 0; }
+        .nav button .icon-holder { font-size: 20px; transition: 0.3s; width: 24px; height: 24px; display: flex; justify-content: center; align-items: center; }
+        .nav button.active { color: var(--accent); }
+        .nav button.active .icon-holder { transform: translateY(-3px); }
+        
+        /* الصفحات */
+        .page { display: none; padding: 15px; }
+        .page.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* البطاقات والأزرار */
+        .card { background-color: var(--surface); border-radius: 12px; padding: 15px; margin-bottom: 15px; border-right: 4px solid var(--accent); box-shadow: 0 4px 8px rgba(0,0,0,0.4); position: relative; }
+        .btn { background-color: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; width: 100%; margin-top: 10px; font-family: 'Cairo'; font-weight: 900; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(50%); }
+        .btn-accent { background-color: var(--accent); color: #000; }
+        .btn-danger { background-color: var(--danger); }
+        .btn-success { background-color: var(--success); }
+        .btn-warning { background-color: #d35400; color: white; }
+        
+        /* الملف الشخصي */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .stat-box { background: #111; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid var(--border); }
+        .stat-box h4 { margin: 0; font-size: 11px; color: var(--text-muted); }
+        .stat-box span { font-size: 18px; font-weight: 900; color: var(--accent); }
+        
+        /* الأوسمة */
+        .badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 10px; }
+        .badge-item { background: #111; border: 1px solid var(--border); padding: 10px 5px; border-radius: 8px; text-align: center; transition: 0.3s; }
+        .badge-item .icon-holder { font-size: 24px; color: var(--accent); margin-bottom: 5px; display: flex; justify-content: center; }
+        .badge-item .b-title { font-size: 10px; font-weight: bold; color: var(--text-light); }
+        .badge-item .b-req { font-size: 9px; color: var(--text-muted); margin-top: 3px; display: block; }
+        .badge-item.locked { opacity: 0.4; filter: grayscale(100%); }
+
+        /* تحديات وموقت */
+        .timer-header { text-align: center; background: var(--surface); padding: 15px; border-bottom: 2px solid var(--primary); margin: -15px -15px 15px -15px; border-radius: 0 0 15px 15px; }
+        .timer-header h3 { margin: 0 0 5px 0; font-size: 12px; color: var(--text-muted); }
+        .timer-header .time { font-size: 26px; font-weight: 900; color: var(--accent); letter-spacing: 2px; font-family: monospace; }
+        
+        .challenge-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+        .tag { background: #111; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; color: var(--text-light); border: 1px solid var(--primary); display: flex; align-items: center; gap: 5px; }
+        .completed { opacity: 0.5; filter: grayscale(100%); pointer-events: none; border-right-color: var(--success); }
+        .needs-retry { border-right-color: var(--danger); background-color: rgba(179, 36, 36, 0.05); }
+        
+        /* النوافذ المنبثقة */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 6000; justify-content: center; align-items: center; padding: 15px; backdrop-filter: blur(5px); }
+        .modal-content { background-color: var(--surface); padding: 20px; border-radius: 12px; width: 100%; max-width: 360px; text-align: center; border: 1px solid var(--accent); position: relative; }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 15px; }
+        .option-btn { background: #111; padding: 12px; border: 1px solid var(--primary); border-radius: 8px; color: white; cursor: pointer; font-family: 'Cairo'; font-size: 13px; font-weight: bold; transition: 0.2s; line-height: 1.5; }
+        .option-btn:active { background: var(--primary); }
+
+        .tap-btn { width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(circle, var(--danger) 40%, #500 100%); border: 6px solid #fff; box-shadow: 0 0 25px rgba(179, 36, 36, 0.8); color: white; font-size: 28px; font-weight: 900; margin: 20px auto; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; transition: 0.1s; font-family: 'Cairo'; }
+        .tap-btn:active { transform: scale(0.92); box-shadow: 0 0 10px rgba(179, 36, 36, 0.8); }
+
+        #loader { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(12, 13, 12, 0.95); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
+        .spinner { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--accent); border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; margin-bottom: 10px; }
+        
+        #no-camp-overlay { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="conn-status" style="display:none;">
+        <div class="conn-icon-holder" id="conn-icon"></div>
+        <span id="conn-text"></span>
+    </div>
+
+    <div id="loader"><div class="spinner"></div><h3 style="color: var(--accent); font-size: 14px;">جاري إعداد الميادين...</h3></div>
+
+    <div id="no-camp-overlay" class="modal" style="z-index: 9999; background: var(--bg-main);">
+        <div class="modal-content" style="border-color: var(--danger);">
+            <div id="ic-warning" style="font-size: 50px; color: var(--danger); margin-bottom: 15px; display: flex; justify-content: center;"></div>
+            <h2 style="color:var(--danger); margin-top: 0;">غير مصرح بالدخول</h2>
+            <p style="font-size: 14px; color: #ccc;">أيها المقاتل، لا يوجد لك ملف عسكري نشط. يرجى التوجه للمعسكر وتسجيل هويتك وسلاحك أولاً للوصول إلى ميادين التحدي.</p>
+            <button class="btn btn-danger" style="margin-top: 20px;" onclick="location.href='معسكر.html'">الذهاب للمعسكر الآن</button>
+        </div>
+    </div>
+
+    <div id="mainApp" style="display: none;">
+        
+        <div id="challengesPage" class="page active">
+            <div class="timer-header">
+                <h3>تتجدد المهام خلال</h3>
+                <div class="time" id="countdownTimer">00:00:00</div>
+            </div>
+            <div id="challengesList"></div>
+        </div>
+
+        <div id="profilePage" class="page">
+            <div class="card" style="text-align: center;">
+                <div id="ic-profile-avatar" style="font-size: 45px; color: var(--accent); margin-bottom: 5px; display: flex; justify-content: center;"></div>
+                <h2 id="userName" style="margin:0; font-size: 20px;">...</h2>
+                <p style="margin: 5px 0 0 0; font-size: 12px; color: var(--text-muted);"><span id="ic-shield"></span> <span id="userWeaponDisp">...</span></p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box"><h4>النقاط المكتسبة</h4><span id="userPoints">0</span></div>
+                <div class="stat-box"><h4>الرتبة التكتيكية</h4><span id="userRank">جندي</span></div>
+            </div>
+
+            <div class="card" style="margin-top: 15px;">
+                <h3 style="margin-top: 0; font-size: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; display: flex; align-items: center; gap: 8px;"><span id="ic-badges" style="color: var(--accent);"></span> لوحة الشرف والأوسمة</h3>
+                <div id="userBadges" class="badges-grid"></div>
+            </div>
+        </div>
+
+        <div class="nav">
+            <button id="navChallenges" class="active" onclick="switchTab('challenges')">
+                <div class="icon-holder" id="ic-nav-cross"></div> الميادين
+            </button>
+            <button id="navProfile" onclick="switchTab('profile')">
+                <div class="icon-holder" id="ic-nav-id"></div> الهوية
+            </button>
+        </div>
+    </div>
+
+    <div id="adModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color: var(--accent); margin-top: 0; font-size: 16px; display: flex; justify-content: center; align-items: center; gap: 8px;"><span id="ic-stopwatch"></span> نقطة المراقبة</h3>
+            <p id="adDesc" style="font-size: 13px;">يتطلب هذا الإجراء التوجه لقسم الإعلانات <strong id="adRequired" style="color:var(--danger);">1</strong> مرة/مرات.</p>
+            <div style="background: #111; padding: 12px; border-radius: 8px; margin: 15px 0;">
+                <p style="margin: 0; font-size: 11px; color: var(--text-muted);">الزيارات الحالية</p>
+                <span id="adCurrent" style="font-size: 26px; font-weight: 900; color: var(--success);">0</span>
+            </div>
+            <button class="btn btn-accent" id="btnExecuteAd" onclick="executeAdVisit()"><span id="ic-play"></span> تنفيذ الأوامر</button>
+            <button class="btn btn-danger" onclick="closeModal('adModal')">إلغاء الأمر</button>
+        </div>
+    </div>
+
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color: var(--success); margin-top: 0; font-size: 18px; display: flex; justify-content: center; align-items: center; gap: 8px;"><span id="ic-success"></span> مهمة ناجحة!</h3>
+            <p style="font-size: 14px;">لقد حصلت على <strong id="rewardPoints" style="color: var(--accent); font-size: 18px;">0</strong> نقطة.</p>
+            <div style="margin-top: 20px;" id="rewardActions">
+                <button class="btn btn-accent" onclick="startDoublePointsFlow()"><span id="ic-bolt"></span> مضاعفة النقاط (بإعلانين)</button>
+                <button class="btn" style="background-color: #333;" onclick="claimNormalPoints()"><span id="ic-cash"></span> استلام النقاط الحالية فقط</button>
+            </div>
+            <p id="offlineRewardMsg" style="display: none; color: var(--danger); font-size: 11px; margin-top: 10px;">المضاعفة تتطلب اتصالاً بالإنترنت</p>
+        </div>
+    </div>
+
+    <div id="sportModal" class="modal">
+        <div class="modal-content">
+            <h3 id="sTitle" style="color: var(--accent); margin-top: 0; font-size: 16px;">تحدي بدني</h3>
+            <div style="background: #111; padding: 15px; border-radius: 8px; margin: 15px 0; border: 1px dashed var(--accent);">
+                <div id="ic-dumbbell-lg" style="font-size: 24px; color: var(--text-muted); margin-bottom: 10px; display: flex; justify-content: center;"></div>
+                <p id="sDesc" style="font-size: 14px; font-weight: bold; margin: 0;"></p>
+            </div>
+            <button class="btn" onclick="confirmSportChallenge()"><span id="ic-check-double"></span> أتممت المهمة بنجاح</button>
+            <button class="btn btn-danger" onclick="closeModal('sportModal')">تأجيل</button>
+        </div>
+    </div>
+
+    <div id="questionModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color: var(--accent); margin-top: 0; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;"><span id="ic-brain"></span> اختبار كفاءة</h3>
+            <p id="qText" style="font-size: 14px; margin-bottom: 15px; font-weight: bold; line-height: 1.6;"></p>
+            <div class="options-grid" id="qOptions"></div>
+            <button class="btn btn-danger" onclick="closeModal('questionModal')" style="margin-top: 15px;">إنسحاب تكتيكي</button>
+        </div>
+    </div>
+
+    <div id="nervesModal" class="modal">
+        <div class="modal-content">
+            <h3 id="nTitle" style="color: var(--accent); margin-top: 0; font-size: 16px;"></h3>
+            <p id="nDesc" style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;"></p>
+            
+            <div style="display: flex; justify-content: space-between; gap: 10px;">
+                <div class="stat-box" style="flex: 1;">
+                    <h4>النقرات</h4>
+                    <span id="nClicks" style="color:var(--success);">0</span>
+                </div>
+                <div class="stat-box" style="flex: 1;">
+                    <h4>الوقت المتبقي</h4>
+                    <span id="nTimer" style="color:var(--danger);">0</span>
+                </div>
+            </div>
+            
+            <div id="btnTap" class="tap-btn" onclick="tapNerves()">اضغط!</div>
+            
+            <p style="font-size: 10px; color: #888; margin-top: 10px;">يبدأ العداد مع أول ضغطة. لا تتوقف!</p>
+            <button class="btn btn-danger" onclick="closeNervesModal()">إنسحاب</button>
+        </div>
+    </div>
+
+<script>
+    // ==========================================
+    // 0. إدارة الأيقونات (Online / Offline)
+    // ==========================================
+    const SVGS = {
+        crosshairs: `<svg viewBox="0 0 24 24" class="svg-icon"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line></svg>`,
+        shield: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>`,
+        user: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`,
+        badge: `<svg viewBox="0 0 24 24" class="svg-icon"><rect x="4" y="4" width="16" height="16" rx="2"></rect><circle cx="12" cy="12" r="4"></circle></svg>`,
+        play: `<svg viewBox="0 0 24 24" class="svg-icon"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`,
+        check: `<svg viewBox="0 0 24 24" class="svg-icon"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
+        check_double: `<svg viewBox="0 0 24 24" class="svg-icon"><polyline points="18 6 7 17 2 12"></polyline><polyline points="22 6 11 17 8 14"></polyline></svg>`,
+        stopwatch: `<svg viewBox="0 0 24 24" class="svg-icon"><circle cx="12" cy="13" r="8"></circle><line x1="12" y1="9" x2="12" y2="13"></line><line x1="10" y1="2" x2="14" y2="2"></line></svg>`,
+        dumbbell: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M6 4v16M18 4v16M2 8h4v8H2zM18 8h4v8h-4zM6 10h12v4H6z"></path></svg>`,
+        brain: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M9.5 2A2.5 2.5 0 0 0 7 4.5v.02a4.5 4.5 0 0 0-1.74 8.21A4.5 4.5 0 0 0 8.5 21h7a4.5 4.5 0 0 0 3.24-8.27A4.5 4.5 0 0 0 17 4.52V4.5A2.5 2.5 0 0 0 14.5 2h-5z"></path></svg>`,
+        bolt: `<svg viewBox="0 0 24 24" class="svg-icon" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
+        hand_pointer: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M14 10V4a2 2 0 0 0-4 0v6M10 14h4v6h-4z"></path></svg>`,
+        radio: `<svg viewBox="0 0 24 24" class="svg-icon"><rect x="7" y="8" width="10" height="14" rx="2"></rect><line x1="15" y1="2" x2="15" y2="8"></line><circle cx="12" cy="18" r="2"></circle><line x1="9" y1="12" x2="15" y2="12"></line></svg>`,
+        book: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>`,
+        monument: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M8 22h8"></path><path d="M10 22V6l2-4 2 4v16"></path></svg>`,
+        flask: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M10 2v7.31L2 20h20L14 9.31V2h-4z"></path><line x1="8.5" y1="2" x2="15.5" y2="2"></line></svg>`,
+        earth: `<svg viewBox="0 0 24 24" class="svg-icon"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path><path d="M2 12h20"></path></svg>`,
+        language: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`,
+        star: `<svg viewBox="0 0 24 24" class="svg-icon" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
+        award: `<svg viewBox="0 0 24 24" class="svg-icon"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>`,
+        crown: `<svg viewBox="0 0 24 24" class="svg-icon"><polygon points="2 4 6 16 12 10 18 16 22 4 12 7 2 4"></polygon><path d="M6 16l-4 6h20l-4-6"></path></svg>`,
+        warning: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
+        cash: `<svg viewBox="0 0 24 24" class="svg-icon"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle></svg>`,
+        wifi_on: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>`,
+        wifi_off: `<svg viewBox="0 0 24 24" class="svg-icon"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path><path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>`
+    };
+
+    const ONLINES = {
+        crosshairs: "fa-solid fa-crosshairs",
+        shield: "fa-solid fa-shield-halved",
+        user: "fa-solid fa-user-astronaut",
+        badge: "fa-solid fa-id-badge",
+        play: "fa-solid fa-play",
+        check: "fa-solid fa-check",
+        check_double: "fa-solid fa-check-double",
+        stopwatch: "fa-solid fa-stopwatch",
+        dumbbell: "fa-solid fa-dumbbell",
+        brain: "fa-solid fa-brain",
+        bolt: "fa-solid fa-bolt",
+        hand_pointer: "fa-solid fa-hand-pointer",
+        radio: "fa-solid fa-walkie-talkie",
+        book: "fa-solid fa-book-quran",
+        monument: "fa-solid fa-monument",
+        flask: "fa-solid fa-flask",
+        earth: "fa-solid fa-earth-africa",
+        language: "fa-solid fa-language",
+        star: "fa-solid fa-star",
+        award: "fa-solid fa-award",
+        crown: "fa-solid fa-crown",
+        warning: "fa-solid fa-triangle-exclamation",
+        cash: "fa-solid fa-hand-holding-dollar",
+        wifi_on: "fas fa-wifi",
+        wifi_off: "fas fa-wifi-slash"
+    };
+
+    function getIcon(name) {
+        if (!navigator.onLine) {
+            return SVGS[name] || '';
+        } else {
+            return `<i class="${ONLINES[name]}" style="font-size:inherit; color:inherit;"></i>`;
+        }
+    }
+
+    function setupStaticIcons() {
+        document.getElementById('ic-warning').innerHTML = getIcon('warning');
+        document.getElementById('ic-profile-avatar').innerHTML = getIcon('user');
+        document.getElementById('ic-shield').innerHTML = getIcon('shield');
+        document.getElementById('ic-nav-cross').innerHTML = getIcon('crosshairs');
+        document.getElementById('ic-nav-id').innerHTML = getIcon('badge');
+        document.getElementById('ic-badges').innerHTML = getIcon('award');
+        document.getElementById('ic-stopwatch').innerHTML = getIcon('stopwatch');
+        document.getElementById('ic-play').innerHTML = getIcon('play');
+        document.getElementById('ic-success').innerHTML = getIcon('check_double');
+        document.getElementById('ic-bolt').innerHTML = getIcon('bolt');
+        document.getElementById('ic-cash').innerHTML = getIcon('cash');
+        document.getElementById('ic-dumbbell-lg').innerHTML = getIcon('dumbbell');
+        document.getElementById('ic-brain').innerHTML = getIcon('brain');
+    }
+
+    function updateConnStatus() {
+        const statusBox = document.getElementById('conn-status');
+        const iconHolder = document.getElementById('conn-icon');
+        const textHolder = document.getElementById('conn-text');
+        
+        if (navigator.onLine) {
+            iconHolder.innerHTML = getIcon('wifi_on');
+            textHolder.innerHTML = '<span style="color:#2ecc71; margin-right:5px;">متصل بالقيادة</span>';
+            statusBox.style.display = 'flex';
+            document.getElementById('rewardActions').style.display = 'block';
+            document.getElementById('offlineRewardMsg').style.display = 'none';
+            setTimeout(() => { if(navigator.onLine) statusBox.style.opacity = '0'; setTimeout(()=> { if(statusBox.style.opacity === '0') statusBox.style.display='none'; }, 500); }, 3000);
+        } else {
+            iconHolder.innerHTML = getIcon('wifi_off');
+            textHolder.innerHTML = '<span style="color:#e74c3c; margin-right:5px;">وضعية الأوفلاين نشطة</span>';
+            statusBox.style.display = 'flex';
+            statusBox.style.opacity = '1';
+            document.getElementById('rewardActions').style.display = 'none';
+            document.getElementById('offlineRewardMsg').style.display = 'block';
+        }
+    }
+
+    // ==========================================
+    // 1. إدارة الهوية والـ Theming من المعسكر
+    // ==========================================
+    const weaponStyles = {
+        war: '#4b5320', navy: '#1a5276', air: '#2e86c1', police: '#212f3d',
+        def: '#117a65', med: '#c0392b', tech: '#7f8c8d', it: '#6c5ce7'
+    };
+    const weaponNames = {
+        war: 'سلاح المشاة', navy: 'القوات البحرية', air: 'القوات الجوية', police: 'هيئة الشرطة',
+        def: 'الدفاع الجوي', med: 'الطب العسكري', tech: 'الفنية العسكرية', it: 'التكنولوجيا العسكرية'
+    };
+
+    let campData = JSON.parse(localStorage.getItem('militaryOS_user'));
+    let userObj = {
+        points: parseInt(localStorage.getItem('نقاط_التحدي')) || 0,
+        completedAllTime: JSON.parse(localStorage.getItem('تحديات_مكتملة')) || [],
+        rank: localStorage.getItem('رتبة_التحدي') || 'جندي'
+    };
+
+    function saveUserDataLocally() {
+        localStorage.setItem('نقاط_التحدي', userObj.points);
+        localStorage.setItem('رتبة_التحدي', userObj.rank);
+        localStorage.setItem('تحديات_مكتملة', JSON.stringify(userObj.completedAllTime));
+    }
+
+    window.onload = function() {
+        setupStaticIcons();
+        window.addEventListener('online', () => { updateConnStatus(); setupStaticIcons(); renderChallenges(); });
+        window.addEventListener('offline', () => { updateConnStatus(); setupStaticIcons(); renderChallenges(); });
+        updateConnStatus();
+
+        if (!campData || !campData.name) {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('no-camp-overlay').style.display = 'flex';
+            return;
+        }
+
+        // تطبيق الثيم بناءً على السلاح
+        let color = weaponStyles[campData.weapon] || '#4b5320';
+        document.documentElement.style.setProperty('--primary', color);
+        document.getElementById('userName').innerText = campData.name;
+        document.getElementById('userWeaponDisp').innerText = weaponNames[campData.weapon] || 'سلاح غير معروف';
+
+        document.getElementById('mainApp').style.display = 'block';
+        setTimeout(() => {
+            updateUI();
+            initDailyChallenges();
+            document.getElementById('loader').style.display = 'none';
+        }, 500);
+    };
+
+    // ==========================================
+    // 2. بنك الأسئلة والتحديات
+    // ==========================================
+    function getLocalTodayDateString() {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    const generatedPhysicalChallenges = [];
+    let physIdCounter = 1000;
+    const exercises = [
+        { name: 'الضغط', icon: 'dumbbell' },
+        { name: 'البطن', icon: 'dumbbell' },
+        { name: 'السكوات', icon: 'dumbbell' },
+        { name: 'البلانك (ثواني)', icon: 'dumbbell' }
+    ];
+    const repLevels = [15, 30, 50, 80]; 
+    exercises.forEach(ex => {
+        repLevels.forEach(reps => {
+            generatedPhysicalChallenges.push({
+                id: physIdCounter++, type: 'بدني', icon: ex.icon,
+                title: `تحدي ${ex.name} ${reps >= 50 ? 'المكثف' : 'العادي'}`,
+                desc: `قم بتنفيذ ${reps} عدة/ثانية من تمرين ${ex.name} بشكل صحيح ومتواصل.`,
+                points: Math.floor(reps * 1.5)
+            });
+        });
+    });
+
+    const nervesChallenges = [
+        { id: 501, type: 'أعصاب', icon: 'hand_pointer', title: 'تحدي الإحماء', desc: 'اضغط 100 مرة في 20 ثانية', target: 100, time: 20, points: 20 },
+        { id: 502, type: 'أعصاب', icon: 'bolt', title: 'سرعة البرق', desc: 'اضغط 300 مرة في 45 ثانية', target: 300, time: 45, points: 40 },
+        { id: 503, type: 'أعصاب', icon: 'bolt', title: 'تحدي المحترفين', desc: 'اضغط 500 مرة في 60 ثانية', target: 500, time: 60, points: 60 },
+        { id: 504, type: 'أعصاب', icon: 'hand_pointer', title: 'التسخين السريع', desc: 'اضغط 50 مرة في 10 ثواني', target: 50, time: 10, points: 15 }
+    ];
+
+    const generatedMorseChallenges = [];
+    let morseIdCounter = 2000;
+    const morseDictionary = {
+        'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.', 
+        'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..', 
+        'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.', 
+        'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-', 
+        'Y': '-.--', 'Z': '--..'
+    };
+    const militaryWordsMap = [
+        { en: 'BASE', ar: 'القاعدة' }, { en: 'TANK', ar: 'الدبابة' },
+        { en: 'SNIPER', ar: 'القناص' }, { en: 'RADAR', ar: 'الرادار' },
+        { en: 'BOMB', ar: 'القنبلة' }, { en: 'UNIT', ar: 'الوحدة' },
+        { en: 'ARMY', ar: 'الجيش' }, { en: 'FIRE', ar: 'النار/الرمي' },
+        { en: 'CAMP', ar: 'المعسكر' }, { en: 'JET', ar: 'المقاتلة' },
+        { en: 'GUN', ar: 'البندقية' }, { en: 'NAVY', ar: 'البحرية' },
+        { en: 'ZONE', ar: 'المنطقة' }, { en: 'CODE', ar: 'الشفرة' }
+    ];
+
+    function toMorseString(word) { return word.split('').map(char => morseDictionary[char]).join(' '); }
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    militaryWordsMap.forEach(item => {
+        let correctMorse = toMorseString(item.en);
+        let wrong1 = toMorseString(item.en.split('').reverse().join('')); 
+        let wrong2 = correctMorse.replace(/\./g, 'x').replace(/-/g, '.').replace(/x/g, '-'); 
+        let wrong3 = correctMorse.slice(0, -2) + (correctMorse.endsWith('.') ? '-' : '.'); 
+        
+        let optionsHtml = [
+            `<span style="direction:ltr; display:inline-block; font-family:monospace; letter-spacing:3px;">${correctMorse}</span>`,
+            `<span style="direction:ltr; display:inline-block; font-family:monospace; letter-spacing:3px;">${wrong1}</span>`,
+            `<span style="direction:ltr; display:inline-block; font-family:monospace; letter-spacing:3px;">${wrong2}</span>`,
+            `<span style="direction:ltr; display:inline-block; font-family:monospace; letter-spacing:3px;">${wrong3}</span>`
+        ];
+
+        let correctOption = optionsHtml[0];
+        shuffleArray(optionsHtml);
+        let correctIndex = optionsHtml.indexOf(correctOption);
+
+        generatedMorseChallenges.push({
+            id: morseIdCounter++, type: 'شفرة', icon: 'radio', title: 'فك التشفير اللاسلكي',
+            q: `حدد شفرة مورس الصحيحة الدالة على كلمة (${item.ar} - ${item.en}):`,
+            options: optionsHtml, ans: correctIndex, points: 30
+        });
+    });
+
+    const manualChallengesDB = [
+        // --- القسم الديني (101 - 137) ---
+        { id: 101, type: 'ديني', icon: 'book', title: 'السيرة النبوية', q: 'في أي سنة هجرية وقعت غزوة الخندق (الأحزاب)؟', options: ['السنة الثالثة للهجرة', 'السنة الرابعة للهجرة', 'السنة الخامسة للهجرة', 'السنة السادسة للهجرة'], ans: 2, points: 20 },
+        { id: 102, type: 'ديني', icon: 'book', title: 'القرآن الكريم', q: 'ما هي السورة التي لا تبدأ بالبسملة، وتسمى بالفاضحة؟', options: ['سورة التوبة', 'سورة الأنفال', 'سورة يونس', 'سورة محمد'], ans: 0, points: 15 },
+        { id: 103, type: 'ديني', icon: 'book', title: 'خلفاء راشدون', q: 'من هو الصحابي الذي أُطلق عليه لقب "أمين هذه الأمة"؟', options: ['عمر بن الخطاب', 'أبو عبيدة بن الجراح', 'عثمان بن عفان', 'علي بن أبي طالب'], ans: 1, points: 20 },
+        { id: 104, type: 'ديني', icon: 'book', title: 'تاريخ إسلامي', q: 'ما هي الغزوة التي جُرح فيها النبي وكُسرت رَباعيته؟', options: ['غزوة بدر', 'غزوة أحد', 'غزوة مؤتة', 'غزوة حنين'], ans: 1, points: 15 },
+        { id: 105, type: 'ديني', icon: 'book', title: 'الأنبياء', q: 'من هو النبي الذي سُخرت له الجبال يسبحن معه والطير؟', options: ['النبي سليمان', 'النبي داود', 'النبي إبراهيم', 'النبي أيوب'], ans: 1, points: 20 },
+        { id: 106, type: 'ديني', icon: 'book', title: 'القرآن الكريم', q: 'السورة التي تعدل ثلث القرآن الكريم هي:', options: ['سورة الفلق', 'سورة الكافرون', 'سورة الإخلاص', 'سورة النصر'], ans: 2, points: 15 },
+        { id: 107, type: 'ديني', icon: 'book', title: 'السيرة النبوية', q: 'من هي آخر زوجات النبي محمد (ص) وفاةً؟', options: ['عائشة بنت أبي بكر', 'حفصة بنت عمر', 'أم سلمة', 'زينب بنت جحش'], ans: 2, points: 25 },
+        { id: 108, type: 'ديني', icon: 'book', title: 'معارك إسلامية', q: 'معركة قادها خالد بن الوليد ضد الروم وتعتبر من أشرس المعارك:', options: ['معركة القادسية', 'معركة اليرموك', 'معركة نهاوند', 'معركة حطين'], ans: 1, points: 20 },
+        { id: 109, type: 'ديني', icon: 'book', title: 'أحكام إسلامية', q: 'كم عدد مصارف الزكاة المذكورة في سورة التوبة؟', options: ['ستة مصارف', 'سبعة مصارف', 'ثمانية مصارف', 'تسعة مصارف'], ans: 2, points: 20 },
+        { id: 110, type: 'ديني', icon: 'book', title: 'الأنبياء', q: 'إلى أي قوم أُرسل النبي هود عليه السلام؟', options: ['قوم عاد', 'قوم ثمود', 'قوم مدين', 'قوم لوط'], ans: 0, points: 20 },
+        { id: 111, type: 'ديني', icon: 'book', title: 'القرآن الكريم', q: 'ما هو الحيوان الذي اُتهم ظلماً في قصص الأنبياء المذكورة بالقرآن؟', options: ['الغراب', 'الذئب', 'الهدهد', 'الحوت'], ans: 1, points: 25 },
+        { id: 112, type: 'ديني', icon: 'book', title: 'الصحابة', q: 'من هو الصحابي الذي اهتز له عرش الرحمن عند وفاته؟', options: ['سعد بن معاذ', 'حمزة بن عبد المطلب', 'مصعب بن عمير', 'أسامة بن زيد'], ans: 0, points: 20 },
+        { id: 113, type: 'ديني', icon: 'book', title: 'القرآن الكريم', q: 'كم عدد سور القرآن الكريم المدنية تقريباً حسب أغلب العلماء؟', options: ['28 سورة', '86 سورة', '114 سورة', '30 سورة'], ans: 0, points: 25 },
+        { id: 114, type: 'ديني', icon: 'book', title: 'الأنبياء', q: 'من هو النبي الذي صام عن الكلام ثلاثة أيام إلا رمزاً؟', options: ['يحيى عليه السلام', 'زكريا عليه السلام', 'يونس عليه السلام', 'عيسى عليه السلام'], ans: 1, points: 20 },
+        { id: 115, type: 'ديني', icon: 'book', title: 'الصحابة', q: 'من هو الصحابي الذي كلفه أبو بكر الصديق بجمع القرآن الكريم؟', options: ['عبدالله بن مسعود', 'أبي بن كعب', 'زيد بن ثابت', 'علي بن أبي طالب'], ans: 2, points: 20 },
+        { id: 116, type: 'ديني', icon: 'book', title: 'أحكام', q: 'ما هي الصلاة التي يركع فيها المصلي 4 ركوعات ويسجد 4 سجدات؟', options: ['صلاة الخوف', 'صلاة الكسوف', 'صلاة الجنازة', 'صلاة الاستسقاء'], ans: 1, points: 30 },
+        { id: 117, type: 'ديني', icon: 'book', title: 'معارك', q: 'ما هي الغزوة التي سُميت بـ "غزوة العُسرة"؟', options: ['غزوة بدر', 'غزوة تبوك', 'غزوة حنين', 'غزوة الخندق'], ans: 1, points: 15 },
+        { id: 118, type: 'ديني', icon: 'book', title: 'القرآن الكريم', q: 'سورة سُميت باسم إحدى ثمار الفاكهة؟', options: ['التين', 'الرمان', 'الزيتون', 'النخيل'], ans: 0, points: 10 },
+        { id: 119, type: 'ديني', icon: 'book', title: 'ملائكة', q: 'ما هو اسم المَلَك خازن النار؟', options: ['رضوان', 'مالك', 'ميكائيل', 'إسرافيل'], ans: 1, points: 15 },
+        { id: 120, type: 'ديني', icon: 'book', title: 'تاريخ إسلامي', q: 'من هي المرأة التي جادلت النبي (ص) في زوجها ونزلت فيها سورة؟', options: ['خولة بنت ثعلبة', 'أسماء بنت أبي بكر', 'فاطمة بنت أسد', 'سمية بنت خياط'], ans: 0, points: 25 },
+        { id: 121, type: 'ديني', icon: 'book', title: 'الأنبياء', q: 'النبي الذي قبضت روحه في السماء الرابعة؟', options: ['إدريس عليه السلام', 'عيسى عليه السلام', 'يوسف عليه السلام', 'إلياس عليه السلام'], ans: 0, points: 30 },
+        { id: 122, type: 'ديني', icon: 'book', title: 'الصحابة', q: 'أول من أسلم من الموالي (العبيد) هو:', options: ['صهيب الرومي', 'سلمان الفارسي', 'بلال بن رباح', 'زيد بن حارثة'], ans: 3, points: 20 },
+        { id: 123, type: 'ديني', icon: 'book', title: 'القرآن الكريم', q: 'ما هي السورة التي تسمى بـ "قلب القرآن"؟', options: ['الرحمن', 'الواقعة', 'يس', 'الملك'], ans: 2, points: 15 },
+        { id: 124, type: 'ديني', icon: 'book', title: 'تاريخ', q: 'كم كان عمر النبي محمد (ص) عندما نزل عليه الوحي؟', options: ['35 سنة', '40 سنة', '50 سنة', '63 سنة'], ans: 1, points: 10 },
+        { id: 125, type: 'ديني', icon: 'book', title: 'أحكام', q: 'ما هو الميقات المكاني لأهل الشام ومصر للحج؟', options: ['يلملم', 'ذو الحليفة', 'قرن المنازل', 'الجحفة'], ans: 3, points: 25 },
+        { id: 126, type: 'ديني', icon: 'book', title: 'القرآن الكريم', q: 'السورة التي بها سجدتان تلاوة هي:', options: ['سورة الحج', 'سورة الأعراف', 'سورة النجم', 'سورة العلق'], ans: 0, points: 30 },
+        { id: 127, type: 'ديني', icon: 'book', title: 'الأنبياء', q: 'النبي الذي ابتلعه النون (الحوت) هو:', options: ['نوح', 'يونس', 'موسى', 'أيوب'], ans: 1, points: 15 },
+        { id: 128, type: 'ديني', icon: 'book', title: 'الصحابة', q: 'من هو حواري رسول الله (ص)؟', options: ['الزبير بن العوام', 'طلحة بن عبيد الله', 'أبو عبيدة بن الجراح', 'علي بن أبي طالب'], ans: 0, points: 20 },
+        { id: 129, type: 'ديني', icon: 'book', title: 'تاريخ إسلامي', q: 'في أي عام هجري تم فتح مكة؟', options: ['السنة السادسة', 'السنة السابعة', 'السنة الثامنة', 'السنة التاسعة'], ans: 2, points: 20 },
+        { id: 130, type: 'ديني', icon: 'book', title: 'القرآن الكريم', q: 'ما هي أطول آية في القرآن الكريم؟', options: ['آية الكرسي', 'آية الدين', 'آية النور', 'آية المواريث'], ans: 1, points: 15 },
+        { id: 131, type: 'ديني', icon: 'book', title: 'الصحابة', q: 'من هو الصحابي الذي تستحي منه الملائكة؟', options: ['أبو بكر الصديق', 'عمر بن الخطاب', 'عثمان بن عفان', 'علي بن أبي طالب'], ans: 2, points: 15 },
+        { id: 132, type: 'ديني', icon: 'book', title: 'أحكام', q: 'كم عدد الركعات في صلاة الوتر الأقل؟', options: ['ركعة واحدة', 'ركعتان', 'ثلاث ركعات', 'لا يوجد حد'], ans: 0, points: 10 },
+        { id: 133, type: 'ديني', icon: 'book', title: 'الأنبياء', q: 'أول نبي خط بالقلم هو:', options: ['آدم', 'إدريس', 'نوح', 'شيث'], ans: 1, points: 20 },
+        { id: 134, type: 'ديني', icon: 'book', title: 'القرآن الكريم', q: 'ما هي السورة التي ذكرت فيها البسملة مرتين؟', options: ['الفاتحة', 'النمل', 'البقرة', 'القصص'], ans: 1, points: 25 },
+        { id: 135, type: 'ديني', icon: 'book', title: 'تاريخ', q: 'كم استمرت دعوة النبي (ص) سراً في مكة؟', options: ['سنة واحدة', 'سنتان', 'ثلاث سنوات', 'خمس سنوات'], ans: 2, points: 15 },
+        { id: 136, type: 'ديني', icon: 'book', title: 'الصحابة', q: 'من هو ترجمان القرآن؟', options: ['عبدالله بن عباس', 'عبدالله بن مسعود', 'عبدالله بن عمر', 'زيد بن ثابت'], ans: 0, points: 20 },
+        { id: 137, type: 'ديني', icon: 'book', title: 'أحكام', q: 'أول ما يُحاسب عليه العبد يوم القيامة:', options: ['الزكاة', 'بر الوالدين', 'الصلاة', 'الصيام'], ans: 2, points: 10 },
+
+        // --- القسم التاريخي (201 - 238) ---
+        { id: 201, type: 'تاريخي', icon: 'monument', title: 'تاريخ إسلامي', q: 'في أي معركة انتصر المسلمون على التتار وأوقفوا زحفهم؟', options: ['معركة حطين', 'معركة عين جالوت', 'معركة شقحَب', 'معركة الزلاقة'], ans: 1, points: 25 },
+        { id: 202, type: 'تاريخي', icon: 'earth', title: 'عواصم تاريخية', q: 'ما هي أول عاصمة للدولة الأموية؟', options: ['بغداد', 'الفسطاط', 'دمشق', 'القيروان'], ans: 2, points: 15 },
+        { id: 203, type: 'تاريخي', icon: 'monument', title: 'الفراعنة', q: 'الفرعون الذي خاض معركة قادش ضد الحيثيين هو:', options: ['أحمس الأول', 'رمسيس الثاني', 'تحوتمس الثالث', 'توت عنخ آمون'], ans: 1, points: 20 },
+        { id: 204, type: 'تاريخي', icon: 'earth', title: 'الحرب العالمية', q: 'في أي عام انتهت الحرب العالمية الثانية؟', options: ['1943', '1944', '1945', '1946'], ans: 2, points: 15 },
+        { id: 205, type: 'تاريخي', icon: 'monument', title: 'شخصيات تاريخية', q: 'من هو القائد المسلم الملقب بـ "فاتح السند"؟', options: ['محمد بن القاسم', 'قتيبة بن مسلم', 'طارق بن زياد', 'عقبة بن نافع'], ans: 0, points: 25 },
+        { id: 206, type: 'تاريخي', icon: 'earth', title: 'تاريخ أندلسي', q: 'من هو مؤسس دولة بني أمية في الأندلس؟', options: ['عبد الرحمن الغافقي', 'عبد الرحمن الداخل', 'طارق بن زياد', 'موسى بن نصير'], ans: 1, points: 20 },
+        { id: 207, type: 'تاريخي', icon: 'monument', title: 'معاهدات', q: 'ما اسم المعاهدة التي قسمت تركة الدولة العثمانية بين بريطانيا وفرنسا؟', options: ['معاهدة لوزان', 'معاهدة سيفر', 'اتفاقية سايكس بيكو', 'وعد بلفور'], ans: 2, points: 25 },
+        { id: 208, type: 'تاريخي', icon: 'earth', title: 'الحروب الصليبية', q: 'من هو الملك الإنجليزي الذي قاد الحملة الصليبية الثالثة؟', options: ['فريدريك بربروسا', 'فيليب أغسطس', 'ريتشارد قلب الأسد', 'لويس التاسع'], ans: 2, points: 20 },
+        { id: 209, type: 'تاريخي', icon: 'monument', title: 'تاريخ حديث', q: 'دولة أوروبية لم تخضع لأي احتلال طوال تاريخها الحديث:', options: ['سويسرا', 'اليونان', 'بولندا', 'النرويج'], ans: 0, points: 15 },
+        { id: 210, type: 'تاريخي', icon: 'earth', title: 'حضارات قديمة', q: 'أين نشأت حضارة المايا العريقة؟', options: ['أمريكا الجنوبية', 'أمريكا الوسطى', 'حوض نهر النيل', 'بلاد الرافدين'], ans: 1, points: 20 },
+        { id: 211, type: 'تاريخي', icon: 'monument', title: 'الدولة العثمانية', q: 'من هو السلطان العثماني الذي فتح القسطنطينية؟', options: ['سليم الأول', 'سليمان القانوني', 'محمد الفاتح', 'مراد الثاني'], ans: 2, points: 15 },
+        { id: 212, type: 'تاريخي', icon: 'earth', title: 'استقلال', q: 'في أي عام نالت الجزائر استقلالها عن فرنسا؟', options: ['1958', '1960', '1962', '1964'], ans: 2, points: 20 },
+        { id: 213, type: 'تاريخي', icon: 'monument', title: 'شخصيات', q: 'من هو مؤسس علم الاجتماع؟', options: ['ابن رشد', 'ابن سينا', 'ابن خلدون', 'الفارابي'], ans: 2, points: 15 },
+        { id: 214, type: 'تاريخي', icon: 'earth', title: 'ألقاب', q: 'أي مدينة تُعرف تاريخياً بلقب "مدينة التلال السبعة"؟', options: ['باريس', 'لندن', 'روما', 'أثينا'], ans: 2, points: 15 },
+        { id: 215, type: 'تاريخي', icon: 'monument', title: 'حضارات', q: 'الحضارة التي ينسب إليها اختراع العجلة (الدولاب) هي:', options: ['الفرعونية', 'السومرية', 'البابلية', 'الرومانية'], ans: 1, points: 25 },
+        { id: 216, type: 'تاريخي', icon: 'earth', title: 'إمبراطوريات', q: 'من هو أول إمبراطور لروما؟', options: ['يوليوس قيصر', 'أغسطس (أوكتافيان)', 'نيرون', 'قسطنطين'], ans: 1, points: 30 },
+        { id: 217, type: 'تاريخي', icon: 'monument', title: 'شخصيات', q: 'من هو القائد الذي استطاع هزيمة نابليون بونابرت في معركة واترلو؟', options: ['دوق ويلينغتون', 'الأدميرال نيلسون', 'القيصر ألكسندر', 'بليشر'], ans: 0, points: 30 },
+        { id: 218, type: 'تاريخي', icon: 'earth', title: 'استكشاف', q: 'من هو المكتشف الفعلي لطريق رأس الرجاء الصالح؟', options: ['كريستوفر كولومبوس', 'فاسكو دا غاما', 'ماجلان', 'جيمس كوك'], ans: 1, points: 20 },
+        { id: 219, type: 'تاريخي', icon: 'monument', title: 'حروب', q: 'كم استمرت حرب المئة عام بين إنجلترا وفرنسا فعلياً؟', options: ['99 عاماً', '100 عام', '116 عاماً', '125 عاماً'], ans: 2, points: 35 },
+        { id: 220, type: 'تاريخي', icon: 'earth', title: 'تاريخ أمريكا', q: 'من هو الرئيس الأمريكي الذي ألغى العبودية؟', options: ['جورج واشنطن', 'أبراهام لينكون', 'توماس جيفرسون', 'جون كينيدي'], ans: 1, points: 15 },
+        { id: 221, type: 'تاريخي', icon: 'monument', title: 'ثورات', q: 'في أي عام اندلعت الثورة الفرنسية؟', options: ['1789', '1799', '1805', '1812'], ans: 0, points: 25 },
+        { id: 222, type: 'تاريخي', icon: 'earth', title: 'دُول', q: 'أي دولة كانت تُعرف سابقاً باسم الحبشة؟', options: ['إريتريا', 'جيبوتي', 'إثيوبيا', 'الصومال'], ans: 2, points: 15 },
+        { id: 223, type: 'تاريخي', icon: 'monument', title: 'ممالك', q: 'ما هي عاصمة الإمبراطورية البيزنطية؟', options: ['روما', 'القسطنطينية', 'أثينا', 'قرطاج'], ans: 1, points: 10 },
+        { id: 224, type: 'تاريخي', icon: 'earth', title: 'قادة', q: 'الزعيم السوفيتي الذي قاد بلاده في الحرب العالمية الثانية؟', options: ['فلاديمير لينين', 'جوزيف ستالين', 'نيكيتا خروتشوف', 'ميخائيل غورباتشوف'], ans: 1, points: 20 },
+        { id: 225, type: 'تاريخي', icon: 'monument', title: 'تاريخ عربي', q: 'من باني مدينة القاهرة؟', options: ['صلاح الدين الأيوبي', 'عمرو بن العاص', 'جوهر الصقلي', 'محمد علي باشا'], ans: 2, points: 20 },
+        { id: 226, type: 'تاريخي', icon: 'earth', title: 'معاهدات', q: 'المعاهدة التي أنهت الحرب العالمية الأولى هي:', options: ['معاهدة فرساي', 'معاهدة باريس', 'معاهدة لشبونة', 'معاهدة ميونخ'], ans: 0, points: 25 },
+        { id: 227, type: 'تاريخي', icon: 'monument', title: 'شخصيات', q: 'الملكة المصرية التي كانت آخر ملوك الأسرة البطلمية؟', options: ['حتشبسوت', 'نفرتيتي', 'كليوباترا السابعة', 'تي'], ans: 2, points: 15 },
+        { id: 228, type: 'تاريخي', icon: 'earth', title: 'اكتشافات', q: 'العالم الذي اكتشف الأمريكيتين عام 1492م؟', options: ['أمريكو فسبوتشي', 'ماجلان', 'ماركو بولو', 'كريستوفر كولومبوس'], ans: 3, points: 10 },
+        { id: 229, type: 'تاريخي', icon: 'monument', title: 'تاريخ آسيوي', q: 'من هو مؤسس الإمبراطورية المغولية؟', options: ['تيمورلنك', 'جنكيز خان', 'هولاكو', 'قوبلاي خان'], ans: 1, points: 20 },
+        { id: 230, type: 'تاريخي', icon: 'earth', title: 'حضارات', q: 'ماذا كان اسم الكتاب المقدس في الديانة الزرادشتية؟', options: ['الفيدا', 'الأفيستا', 'التوراة', 'الإنجيل'], ans: 1, points: 30 },
+        { id: 231, type: 'تاريخي', icon: 'monument', title: 'عصور', q: 'بماذا يُعرف العصر الذي تلا العصور المظلمة في أوروبا؟', options: ['عصر التنوير', 'عصر النهضة', 'الثورة الصناعية', 'العصر الكلاسيكي'], ans: 1, points: 15 },
+        { id: 232, type: 'تاريخي', icon: 'earth', title: 'حروب', q: 'المدينة التي أُلقيت عليها أول قنبلة ذرية في التاريخ؟', options: ['ناجازاكي', 'طوكيو', 'هيروشيما', 'أوساكا'], ans: 2, points: 10 },
+        { id: 233, type: 'تاريخي', icon: 'monument', title: 'ألقاب', q: 'الملك الفرنسي الذي سُمي بـ "الملك الشمس"؟', options: ['لويس الرابع عشر', 'لويس السادس عشر', 'فيليب الثاني', 'نابليون'], ans: 0, points: 25 },
+        { id: 234, type: 'تاريخي', icon: 'earth', title: 'تاريخ قديم', q: 'ما اسم الإمبراطورية التي سقطت على يد العثمانيين عام 1453؟', options: ['الإمبراطورية الرومانية الغربية', 'الإمبراطورية البيزنطية', 'الإمبراطورية الفارسية', 'الخلافة العباسية'], ans: 1, points: 20 },
+        { id: 235, type: 'تاريخي', icon: 'monument', title: 'اكتشافات', q: 'المدينة الأثرية التي دُمرت بالكامل بسبب بركان فيزوف؟', options: ['روما', 'بومبي', 'إسبرطة', 'أثينا'], ans: 1, points: 20 },
+        { id: 236, type: 'تاريخي', icon: 'earth', title: 'الحرب الباردة', q: 'ما هو الجدار الذي فصل ألمانيا إلى شرق وغرب وتم هدمه في 1989؟', options: ['جدار الصين', 'جدار برلين', 'خط ماجينو', 'جدار الفصل'], ans: 1, points: 15 },
+        { id: 237, type: 'تاريخي', icon: 'monument', title: 'قادة', q: 'من هو القائد الصيني الذي أسس جمهورية الصين الشعبية؟', options: ['صن يات سين', 'تشانغ كاي شيك', 'ماو تسي تونغ', 'شي جين بينغ'], ans: 2, points: 25 },
+        { id: 238, type: 'تاريخي', icon: 'earth', title: 'أساطير', q: 'في الأساطير اليونانية، من هو إله الرعد والسماء؟', options: ['أبولو', 'بوسيدون', 'زيوس', 'هاديس'], ans: 2, points: 15 },
+
+        // --- القسم العلمي (301 - 337) ---
+        { id: 301, type: 'علمي', icon: 'flask', title: 'فيزياء الفضاء', q: 'أي من هذه الكواكب يعتبر الكوكب الأشد حرارة في مجموعتنا الشمسية؟', options: ['عطارد', 'الزهرة', 'المريخ', 'المشتري'], ans: 1, points: 20 },
+        { id: 302, type: 'علمي', icon: 'flask', title: 'كيمياء العناصر', q: 'ما هو العنصر الكيميائي الذي يُشكل النسبة الأكبر في الغلاف الجوي؟', options: ['الأكسجين', 'الهيدروجين', 'النيتروجين', 'ثاني أكسيد الكربون'], ans: 2, points: 15 },
+        { id: 303, type: 'علمي', icon: 'flask', title: 'تشريح الأحياء', q: 'أين تقع أصغر عظمة في جسم الإنسان؟', options: ['في الأنف', 'في الأذن', 'في الخنصر', 'في العمود الفقري'], ans: 1, points: 20 },
+        { id: 304, type: 'علمي', icon: 'flask', title: 'اكتشافات', q: 'من هو العالم الذي اكتشف البنسلين؟', options: ['ألكسندر فليمنج', 'لويس باستير', 'ماري كوري', 'ألبرت أينشتاين'], ans: 0, points: 25 },
+        { id: 305, type: 'علمي', icon: 'flask', title: 'علم الحيوان', q: 'ما هو أسرع كائن حي بحري؟', options: ['قرش الماكو', 'الدلفين', 'سمكة الشراع', 'الحوت الأزرق'], ans: 2, points: 20 },
+        { id: 306, type: 'علمي', icon: 'flask', title: 'فيزياء', q: 'ما هي الوحدة المستخدمة لقياس شدة التيار الكهربائي؟', options: ['الفولت', 'الواط', 'الأمبير', 'الأوم'], ans: 2, points: 15 },
+        { id: 307, type: 'علمي', icon: 'flask', title: 'الكيمياء العضوية', q: 'ما هو الغاز المكون الأساسي للغاز الطبيعي؟', options: ['البروبان', 'الإيثان', 'البيوتان', 'الميثان'], ans: 3, points: 25 },
+        { id: 308, type: 'علمي', icon: 'flask', title: 'أحياء دقيقة', q: 'ما هو المرض الذي تسببه بكتيريا "السالمونيلا" غالباً؟', options: ['التيفوئيد', 'الملاريا', 'الكوليرا', 'السل'], ans: 0, points: 30 },
+        { id: 309, type: 'علمي', icon: 'flask', title: 'جيولوجيا', q: 'ما هو أصلح أنواع الصخور لاحتواء حفريات سليمة؟', options: ['الصخور النارية', 'الصخور الرسوبية', 'الصخور المتحولة', 'البركانية'], ans: 1, points: 20 },
+        { id: 310, type: 'علمي', icon: 'flask', title: 'الفلك', q: 'ما هو لون النجم الذي يمتلك أعلى درجة حرارة سطحية؟', options: ['الأحمر', 'الأصفر', 'الأبيض', 'الأزرق'], ans: 3, points: 25 },
+        { id: 311, type: 'علمي', icon: 'flask', title: 'وظائف الأعضاء', q: 'أي غدة في الجسم مسؤولة عن إفراز هرمون الإنسولين؟', options: ['الغدة الدرقية', 'الكبد', 'البنكرياس', 'الغدة النخامية'], ans: 2, points: 15 },
+        { id: 312, type: 'علمي', icon: 'flask', title: 'وحدات قياس', q: 'كم يساوي الميل البحري مقارنة بالكيلومتر تقريباً؟', options: ['1.2 كم', '1.6 كم', '1.85 كم', '2.1 كم'], ans: 2, points: 30 },
+        { id: 313, type: 'علمي', icon: 'flask', title: 'فضاء', q: 'ما هو الكوكب الوحيد في مجموعتنا الشمسية الذي يدور على جانبه (محوره مائل بـ 98 درجة)؟', options: ['الزهرة', 'أورانوس', 'نبتون', 'زحل'], ans: 1, points: 35 },
+        { id: 314, type: 'علمي', icon: 'flask', title: 'كيمياء', q: 'ما هي أقوى مادة طبيعية معروفة على وجه الأرض من حيث الصلابة؟', options: ['الفولاذ', 'التيتانيوم', 'الألماس', 'الجرافين'], ans: 2, points: 15 },
+        { id: 315, type: 'علمي', icon: 'flask', title: 'أحياء', q: 'أي فصيلة دم تُعرف طبياً بـ "المانح العام"؟', options: ['AB موجب', 'O سالب', 'O موجب', 'A سالب'], ans: 1, points: 25 },
+        { id: 316, type: 'علمي', icon: 'flask', title: 'كيمياء', q: 'ما هو العنصر السائل الوحيد في درجة حرارة الغرفة (إلى جانب الزئبق)؟', options: ['البروم', 'الجاليوم', 'السيزيوم', 'الفلور'], ans: 0, points: 30 },
+        { id: 317, type: 'علمي', icon: 'flask', title: 'فيزياء', q: 'من هو العالم صاحب النظرية النسبية العامة والخاصة؟', options: ['إسحاق نيوتن', 'نيلز بور', 'ألبرت أينشتاين', 'ماكس بلانك'], ans: 2, points: 15 },
+        { id: 318, type: 'علمي', icon: 'flask', title: 'علم الحيوان', q: 'ما هو الطائر الوحيد الذي يستطيع الطيران للخلف؟', options: ['الصقر', 'الخفاش', 'الطنان', 'البومة'], ans: 2, points: 20 },
+        { id: 319, type: 'علمي', icon: 'flask', title: 'طب', q: 'ما هو الفيتامين الذي يتم تصنيعه في الجلد عند التعرض لأشعة الشمس؟', options: ['فيتامين C', 'فيتامين D', 'فيتامين A', 'فيتامين E'], ans: 1, points: 15 },
+        { id: 320, type: 'علمي', icon: 'flask', title: 'كيمياء', q: 'أي من الغازات التالية يُعتبر الغاز الأخف وزناً؟', options: ['الهيدروجين', 'الهيليوم', 'الأكسجين', 'النيتروجين'], ans: 0, points: 20 },
+        { id: 321, type: 'علمي', icon: 'flask', title: 'أحياء', q: 'ما هو أكبر عضو داخلي في جسم الإنسان؟', options: ['الرئتين', 'المخ', 'القلب', 'الكبد'], ans: 3, points: 25 },
+        { id: 322, type: 'علمي', icon: 'flask', title: 'فيزياء', q: 'ما هو الجهاز المستخدم لقياس الضغط الجوي؟', options: ['البارومتر', 'الترمومتر', 'الأنيمومتر', 'الهيجرومتر'], ans: 0, points: 20 },
+        { id: 323, type: 'علمي', icon: 'flask', title: 'فضاء', q: 'ما هو اسم المجرة التي تنتمي إليها مجموعتنا الشمسية؟', options: ['المرأة المسلسلة', 'درب التبانة', 'سحابة ماجلان', 'مسييه 87'], ans: 1, points: 15 },
+        { id: 324, type: 'علمي', icon: 'flask', title: 'أحياء النبات', q: 'العملية التي يقوم بها النبات لصنع غذائه باستخدام ضوء الشمس تسمى:', options: ['النتح', 'التنفس الخلوي', 'البناء الضوئي', 'التخمر'], ans: 2, points: 10 },
+        { id: 325, type: 'علمي', icon: 'flask', title: 'علم الحيوان', q: 'الحيوان الثديي الوحيد الذي يمتلك القدرة الحقيقية على الطيران؟', options: ['السنجاب الطائر', 'الخفاش', 'النعامة', 'الليمور'], ans: 1, points: 20 },
+        { id: 326, type: 'علمي', icon: 'flask', title: 'كيمياء', q: 'ما هو الرمز الكيميائي لعنصر الذهب؟', options: ['Ag', 'Au', 'Fe', 'Cu'], ans: 1, points: 15 },
+        { id: 327, type: 'علمي', icon: 'flask', title: 'طب', q: 'ما هو المرض الذي قضى عليه العالم تماماً بفضل اللقاحات في 1980؟', options: ['الطاعون', 'الكوليرا', 'شلل الأطفال', 'الجدري'], ans: 3, points: 30 },
+        { id: 328, type: 'علمي', icon: 'flask', title: 'فيزياء', q: 'سرعة الضوء في الفراغ تبلغ تقريباً كم كيلومتر في الثانية؟', options: ['150,000 كم/ث', '300,000 كم/ث', '1,000,000 كم/ث', '3,000 كم/ث'], ans: 1, points: 25 },
+        { id: 329, type: 'علمي', icon: 'flask', title: 'أحياء', q: 'ما هي الصبغة التي تعطي أوراق النبات لونها الأخضر؟', options: ['الكاروتين', 'الميلانين', 'الكلوروفيل', 'الهيموجلوبين'], ans: 2, points: 15 },
+        { id: 330, type: 'علمي', icon: 'flask', title: 'كيمياء', q: 'ما هو المعدن السائل في درجة حرارة الغرفة؟', options: ['الزئبق', 'الرصاص', 'الحديد', 'الألومنيوم'], ans: 0, points: 10 },
+        { id: 331, type: 'علمي', icon: 'flask', title: 'فضاء', q: 'أول إنسان صعد إلى الفضاء الخارجي هو:', options: ['نيل آرمسترونج', 'يوري غاغارين', 'باز ألدرن', 'فالنتينا تيريشكوفا'], ans: 1, points: 20 },
+        { id: 332, type: 'علمي', icon: 'flask', title: 'أحياء', q: 'كم عدد الكروموسومات في الخلية الجسدية للإنسان الطبيعي؟', options: ['23 زوجاً (46)', '24 زوجاً (48)', '22 زوجاً (44)', '46 زوجاً (92)'], ans: 0, points: 25 },
+        { id: 333, type: 'علمي', icon: 'flask', title: 'فيزياء', q: 'من القائل بأن "لكل فعل رد فعل مساوٍ له في المقدار ومضاد له في الاتجاه"؟', options: ['غاليليو', 'أرخميدس', 'نيوتن', 'باسكال'], ans: 2, points: 15 },
+        { id: 334, type: 'علمي', icon: 'flask', title: 'طب', q: 'ما هي فصيلة الدم التي تُعرف بـ "المستقبل العام"؟', options: ['O موجب', 'AB موجب', 'A سالب', 'B موجب'], ans: 1, points: 20 },
+        { id: 335, type: 'علمي', icon: 'flask', title: 'أحياء دقيقة', q: 'ما هو الميكروب المسبب لمرض الملاريا والذي ينقله البعوض؟', options: ['فيروس زيكا', 'بكتيريا السالمونيلا', 'طفيل البلازموديوم', 'فطر الكانديدا'], ans: 2, points: 30 },
+        { id: 336, type: 'علمي', icon: 'flask', title: 'جيولوجيا', q: 'ما هو مقياس شدة الزلازل الأكثر شيوعاً؟', options: ['مقياس كلفن', 'مقياس ريختر', 'مقياس فهرنهايت', 'مقياس موس'], ans: 1, points: 10 },
+        { id: 337, type: 'علمي', icon: 'flask', title: 'كيمياء', q: 'ما هو الغاز الذي تطلقه النباتات أثناء البناء الضوئي؟', options: ['ثاني أكسيد الكربون', 'الأكسجين', 'النيتروجين', 'الميثان'], ans: 1, points: 10 },
+
+        // --- القسم الذكاء والتحليل المنطقي (401 - 437) ---
+        { id: 401, type: 'ذكاء', icon: 'brain', title: 'لغز رياضي متسلسل', q: 'أكمل السلسلة الرقمية: 2، 6، 12، 20، ...', options: ['28', '30', '32', '36'], ans: 1, points: 30 },
+        { id: 402, type: 'ذكاء', icon: 'brain', title: 'تحليل منطقي', q: 'إذا كان أمس هو غداً، لكان اليوم هو السبت. ما هو اليوم الفعلي؟', options: ['الأحد', 'الإثنين', 'الخميس', 'الجمعة'], ans: 1, points: 35 },
+        { id: 403, type: 'ذكاء', icon: 'brain', title: 'حسبة سريعة', q: 'أخ وأخته، عمر الأخ ضعف عمر أخته. إذا كان عمر الأخ 10 سنوات، فكم سيكون عمره عندما يصبح عمر أخته 10 سنوات؟', options: ['15 سنة', '20 سنة', '12 سنة', '18 سنة'], ans: 0, points: 30 },
+        { id: 404, type: 'ذكاء', icon: 'brain', title: 'لغز لغوي', q: 'ما هو الشيء الذي كلما كثر حراسه ضاع؟', options: ['المال', 'السر', 'الوقت', 'الذهب'], ans: 1, points: 20 },
+        { id: 405, type: 'ذكاء', icon: 'brain', title: 'تفكير خارج الصندوق', q: 'غرفة بها 4 زوايا، في كل زاوية قطة، وأمام كل قطة 3 قطط. كم عدد القطط في الغرفة؟', options: ['4 قطط', '12 قطة', '16 قطة', '8 قطط'], ans: 0, points: 35 },
+        { id: 406, type: 'ذكاء', icon: 'brain', title: 'خداع بصري ومنطقي', q: 'كم عدد الأشهر التي تحتوي على 28 يوماً في السنة؟', options: ['شهر واحد', '6 أشهر', '12 شهر', 'لا شيء'], ans: 2, points: 15 },
+        { id: 407, type: 'ذكاء', icon: 'brain', title: 'لغز الأوزان', q: 'أيهما أثقل: كيلو غرام من الحديد أم كيلو غرام من القطن؟', options: ['الحديد أثقل', 'القطن أثقل', 'نفس الوزن', 'يعتمد على الحجم'], ans: 2, points: 10 },
+        { id: 408, type: 'ذكاء', icon: 'brain', title: 'علاقات تناسبية', q: 'إذا استغرق 5 عمال 5 دقائق لإنتاج 5 قطع، فكم يستغرق 100 عامل لإنتاج 100 قطعة؟', options: ['100 دقيقة', '5 دقائق', '50 دقيقة', 'دقيقة واحدة'], ans: 1, points: 30 },
+        { id: 409, type: 'ذكاء', icon: 'brain', title: 'لغز حركي', q: 'قطار كهربائي يتجه نحو الشمال بسرعة 100كم/س، والهواء يهب نحو الجنوب. لأي اتجاه يطير الدخان؟', options: ['الجنوب', 'الشمال', 'الشرق', 'لا يوجد دخان'], ans: 3, points: 25 },
+        { id: 410, type: 'ذكاء', icon: 'brain', title: 'مصفوفة', q: 'عدد يقل عن 100، يقبل القسمة على 2، 3، 4، 5، و 6 وباقي القسمة دائماً 1، ما هو؟', options: ['31', '61', '91', '41'], ans: 1, points: 40 },
+        { id: 411, type: 'ذكاء', icon: 'brain', title: 'لغز النسب', q: 'أبو مريم لديه 3 بنات: ندى، نورة، فما اسم الثالثة؟', options: ['نوف', 'مريم', 'نهى', 'نادية'], ans: 1, points: 15 },
+        { id: 412, type: 'ذكاء', icon: 'brain', title: 'تشفير لغوي', q: 'ابن أمي وابن أبي، وليس بأختي ولا بأخي، فمن يكون؟', options: ['عمي', 'خالي', 'أنا', 'جدي'], ans: 2, points: 20 },
+        { id: 413, type: 'ذكاء', icon: 'brain', title: 'لغز العائلة', q: 'عائلة تتكون من 6 بنات، وأخ لكل بنت، فكم عدد أبناء العائلة بالكامل؟', options: ['12', '7', '8', '14'], ans: 1, points: 35 },
+        { id: 414, type: 'ذكاء', icon: 'brain', title: 'الشيء المتناقض', q: 'ما هو الشيء الذي ترميه كلما احتجت إليه، وتستعيده إذا انتهيت منه؟', options: ['المال', 'شبكة الصيد / المرساة', 'الكرة', 'السلاح'], ans: 1, points: 25 },
+        { id: 415, type: 'ذكاء', icon: 'brain', title: 'رياضيات سحرية', q: 'ما هي ثلاثة أرقام متتالية حاصل جمعها يساوي بالضبط حاصل ضربها؟', options: ['2, 3, 4', '0, 1, 2', '1, 2, 3', '3, 4, 5'], ans: 2, points: 30 },
+        { id: 416, type: 'ذكاء', icon: 'brain', title: 'لغز مكاني', q: 'شيء تشتريه بمالك ولكنك لا تستطيع إدخاله داخل بيتك أبدًا، ما هو؟', options: ['السيارة', 'المقبرة', 'القطار', 'الشمس'], ans: 0, points: 20 },
+        { id: 417, type: 'ذكاء', icon: 'brain', title: 'سباق الجري', q: 'إذا كنت تجري في سباق وتخطيت المتسابق الذي في المركز الثاني، ففي أي مركز تصبح أنت الآن؟', options: ['المركز الأول', 'المركز الثاني', 'المركز الثالث', 'المركز الأخير'], ans: 1, points: 25 },
+        { id: 418, type: 'ذكاء', icon: 'brain', title: 'الشيء الخفي', q: 'ما هو الشيء الذي يمر عبر الزجاج دون أن يكسره؟', options: ['الهواء', 'الصوت', 'الضوء', 'الماء'], ans: 2, points: 15 },
+        { id: 419, type: 'ذكاء', icon: 'brain', title: 'حسبة الحيوانات', q: 'مزرعة بها دجاج وبقر. إذا أحصيت الرؤوس تجدها 20، وإذا أحصيت الأرجل تجدها 60. كم عدد الأبقار؟', options: ['10', '12', '8', '15'], ans: 0, points: 40 },
+        { id: 420, type: 'ذكاء', icon: 'brain', title: 'لغز المائدة', q: 'ما هو الشيء الذي له رقبة ولكن ليس له رأس؟', options: ['الزجاجة', 'المسمار', 'الجبل', 'الإبرة'], ans: 0, points: 20 },
+        { id: 421, type: 'ذكاء', icon: 'brain', title: 'الأرقام المتتالية', q: 'كم مرة يمكن طرح الرقم 10 من الرقم 100؟', options: ['10 مرات', 'مرة واحدة', '9 مرات', 'لا نهائي'], ans: 1, points: 35 },
+        { id: 422, type: 'ذكاء', icon: 'brain', title: 'لغز الكلمات', q: 'كلمة من 5 أحرف، إذا حذفت أول حرفين يبقى منها حرف واحد. ما هي؟', options: ['طريق', 'مكالمة', 'ثمانية', 'خمسة'], ans: 2, points: 25 },
+        { id: 423, type: 'ذكاء', icon: 'brain', title: 'لغز الغرفة', q: 'تدخل غرفة مظلمة معك عود ثقاب واحد، وبها شمعة وموقد غاز ومدفأة حطب. ماذا تشعل أولاً؟', options: ['الشمعة', 'عود الثقاب', 'موقد الغاز', 'المدفأة'], ans: 1, points: 20 },
+        { id: 424, type: 'ذكاء', icon: 'brain', title: 'السقوط الحر', q: 'إذا أوقعت صخرة وزنها 10 كجم وصخرة 1 كجم من نفس الارتفاع مع عزل مقاومة الهواء، أيهما يصل أولاً؟', options: ['الـ 10 كجم', 'الـ 1 كجم', 'يصلان معاً', 'يعتمد على الجاذبية'], ans: 2, points: 25 },
+        { id: 425, type: 'ذكاء', icon: 'brain', title: 'عمر الأب', q: 'رجل عمره الآن 4 أضعاف عمر ابنه، وبعد 20 سنة سيصبح عمره ضعف عمر ابنه. كم عمر الأب الآن؟', options: ['40', '48', '36', '52'], ans: 0, points: 45 },
+        { id: 426, type: 'ذكاء', icon: 'brain', title: 'الماء المتجمد', q: 'ما هو الشيء الذي إذا غليته جمد؟', options: ['الماء', 'البيض', 'الحديد', 'اللبن'], ans: 1, points: 20 },
+        { id: 427, type: 'ذكاء', icon: 'brain', title: 'المسافة الزمنية', q: 'قطار طوله كيلومتر يسير بسرعة كيلومتر في الدقيقة. كم يستغرق ليعبر نفقاً طوله كيلومتر؟', options: ['دقيقة واحدة', 'دقيقتان', 'ثلاث دقائق', 'نصف دقيقة'], ans: 1, points: 40 },
+        { id: 428, type: 'ذكاء', icon: 'brain', title: 'لغز العين', q: 'شيء يرى كل شيء وليس له عيون، ما هو؟', options: ['المرآة', 'الشمس', 'الكاميرا', 'الماء'], ans: 0, points: 15 },
+        { id: 429, type: 'ذكاء', icon: 'brain', title: 'النسخ', q: 'ورقة زنبق الماء تتضاعف مساحتها يومياً. إذا احتاجت 48 يوماً لتغطي البحيرة، فكم يوماً تحتاج لتغطي نصفها؟', options: ['24 يوماً', '47 يوماً', '12 يوماً', '46 يوماً'], ans: 1, points: 35 },
+        { id: 430, type: 'ذكاء', icon: 'brain', title: 'السير', q: 'يمشي بلا أرجل ويبكي بلا عيون، ما هو؟', options: ['الطفل', 'النهر', 'السحاب', 'الرياح'], ans: 2, points: 20 },
+        { id: 431, type: 'ذكاء', icon: 'brain', title: 'الساعة', q: 'كم مرة يتعامد عقربا الساعة (يصنعان زاوية 90 درجة) في 24 ساعة؟', options: ['24 مرة', '48 مرة', '44 مرة', '22 مرة'], ans: 2, points: 45 },
+        { id: 432, type: 'ذكاء', icon: 'brain', title: 'الشيء الجائع', q: 'شيء إذا أطعمته عاش وإذا أسقيته مات، ما هو؟', options: ['النبات', 'النار', 'الحيوان', 'الطين'], ans: 1, points: 15 },
+        { id: 433, type: 'ذكاء', icon: 'brain', title: 'ترتيب الحروف', q: 'ما هي الكلمة التي تُنطق كما تُكتب، وإذا قرأتها من اليسار لليمين أو اليمين لليسار لا تتغير؟', options: ['باب', 'ليل', 'توت', 'خوخ'], ans: 2, points: 20 },
+        { id: 434, type: 'ذكاء', icon: 'brain', title: 'لغز الحفرة', q: 'حفرة عرضها متران وطولها متران وعمقها متران، كم كمية التراب الموجودة فيها؟', options: ['8 متر مكعب', '4 متر مكعب', 'لا يوجد بها تراب', '2 متر مكعب'], ans: 2, points: 25 },
+        { id: 435, type: 'ذكاء', icon: 'brain', title: 'لغز التوائم', q: 'امرأتان ولدا في نفس اللحظة من نفس الأم ولكنهما ليستا توأمين. كيف؟', options: ['هما أختان غير شقيقتين', 'هما ضمن ثلاثة توائم', 'كذب في السؤال', 'ولدا في سنوات مختلفة'], ans: 1, points: 30 },
+        { id: 436, type: 'ذكاء', icon: 'brain', title: 'الظلام', q: 'ما هو الشيء الذي لا تستطيع رؤيته إلا في الظلام؟', options: ['النجوم', 'الظل', 'الشمس', 'الصوت'], ans: 0, points: 15 },
+        { id: 437, type: 'ذكاء', icon: 'brain', title: 'لغز الشهور', q: 'أي الشهور يمتلك 28 يوماً؟', options: ['فبراير فقط', 'جميع الشهور', 'الشهور الفردية', 'الشهور الزوجية'], ans: 1, points: 20 },
+
+        // --- الفئات الأربعة الجديدة (601 - 700) ---
+        // 1. جغرافيا وميدان (601 - 625)
+        { id: 601, type: 'جغرافيا', icon: 'earth', title: 'تضاريس', q: 'ما هو أطول نهر في العالم؟', options: ['الأمازون', 'النيل', 'المسيسيبي', 'اليانغتسي'], ans: 1, points: 20 },
+        { id: 602, type: 'جغرافيا', icon: 'earth', title: 'عواصم', q: 'ما هي عاصمة أستراليا؟', options: ['سيدني', 'ملبورن', 'كانبرا', 'بيرث'], ans: 2, points: 15 },
+        { id: 603, type: 'جغرافيا', icon: 'earth', title: 'مضائق استراتيجية', q: 'المضيق الذي يفصل بين البحر المتوسط والمحيط الأطلسي هو:', options: ['مضيق هرمز', 'مضيق البوسفور', 'مضيق جبل طارق', 'مضيق باب المندب'], ans: 2, points: 25 },
+        { id: 604, type: 'جغرافيا', icon: 'earth', title: 'دول وقارات', q: 'أكبر دولة في العالم من حيث المساحة هي:', options: ['الصين', 'كندا', 'الولايات المتحدة', 'روسيا'], ans: 3, points: 15 },
+        { id: 605, type: 'جغرافيا', icon: 'earth', title: 'محيطات', q: 'أصغر محيطات العالم مساحة هو:', options: ['المحيط الهندي', 'المحيط المتجمد الشمالي', 'المحيط المتجمد الجنوبي', 'المحيط الأطلسي'], ans: 1, points: 20 },
+        { id: 606, type: 'جغرافيا', icon: 'earth', title: 'تضاريس', q: 'أين تقع سلسلة جبال الأنديز؟', options: ['أمريكا الشمالية', 'أمريكا الجنوبية', 'أوروبا', 'آسيا'], ans: 1, points: 20 },
+        { id: 607, type: 'جغرافيا', icon: 'earth', title: 'جغرافيا العالم', q: 'الدولة الوحيدة التي تشترك في الحدود مع البرتغال هي:', options: ['فرنسا', 'إسبانيا', 'المغرب', 'إيطاليا'], ans: 1, points: 15 },
+        { id: 608, type: 'جغرافيا', icon: 'earth', title: 'عواصم', q: 'ما هي عاصمة كندا؟', options: ['تورونتو', 'أوتاوا', 'مونتريال', 'فانكوفر'], ans: 1, points: 20 },
+        { id: 609, type: 'جغرافيا', icon: 'earth', title: 'بحيرات', q: 'أعمق بحيرة في العالم هي:', options: ['بحيرة فيكتوريا', 'بحيرة سوبيريور', 'بحيرة بايكال', 'البحر الميت'], ans: 2, points: 25 },
+        { id: 610, type: 'جغرافيا', icon: 'earth', title: 'ألقاب المدن', q: 'أي مدينة تُعرف بلقب "مدينة الضباب"؟', options: ['باريس', 'لندن', 'سان فرانسيسكو', 'طوكيو'], ans: 1, points: 15 },
+        { id: 611, type: 'جغرافيا', icon: 'earth', title: 'جزر', q: 'ما هي أكبر جزيرة في العالم (غير قارية)؟', options: ['مدغشقر', 'غينيا الجديدة', 'جرينلاند', 'بورنيو'], ans: 2, points: 20 },
+        { id: 612, type: 'جغرافيا', icon: 'earth', title: 'تضاريس', q: 'أعلى قمة جبلية في قارة أفريقيا هي:', options: ['جبل كينيا', 'جبل كليمنجارو', 'جبل توبقال', 'جبل الكاميرون'], ans: 1, points: 20 },
+        { id: 613, type: 'جغرافيا', icon: 'earth', title: 'مضائق', q: 'مضيق باب المندب يربط بين البحر الأحمر و:', options: ['البحر المتوسط', 'الخليج العربي', 'خليج عدن', 'المحيط الهادئ'], ans: 2, points: 25 },
+        { id: 614, type: 'جغرافيا', icon: 'earth', title: 'دول', q: 'ما هي أصغر دولة في العالم مساحةً؟', options: ['موناكو', 'الفاتيكان', 'سان مارينو', 'ناورو'], ans: 1, points: 15 },
+        { id: 615, type: 'جغرافيا', icon: 'earth', title: 'قارات', q: 'قارة تُعرف بأنها القارة القطبية الجنوبية:', options: ['أنتاركتيكا', 'أوقيانوسيا', 'أوراسيا', 'ألاسكا'], ans: 0, points: 10 },
+        { id: 616, type: 'جغرافيا', icon: 'earth', title: 'عواصم', q: 'ما هي عاصمة اليابان؟', options: ['أوساكا', 'كيوتو', 'طوكيو', 'سول'], ans: 2, points: 10 },
+        { id: 617, type: 'جغرافيا', icon: 'earth', title: 'أنهار', q: 'النهر الذي يمر عبر العاصمة الفرنسية باريس هو:', options: ['التايمز', 'الدانوب', 'السين', 'الراين'], ans: 2, points: 20 },
+        { id: 618, type: 'جغرافيا', icon: 'earth', title: 'جزر طبيعية', q: 'أرخبيل جزر غالاباغوس يتبع سياسياً لدولة:', options: ['الإكوادور', 'تشيلي', 'البرازيل', 'الأرجنتين'], ans: 0, points: 30 },
+        { id: 619, type: 'جغرافيا', icon: 'earth', title: 'مناخ', q: 'الصحراء الكبرى تقع في أي قارة؟', options: ['آسيا', 'أستراليا', 'أفريقيا', 'أمريكا الجنوبية'], ans: 2, points: 10 },
+        { id: 620, type: 'جغرافيا', icon: 'earth', title: 'حدود', q: 'أطول حدود برية مشتركة بين دولتين في العالم هي بين:', options: ['الصين وروسيا', 'أمريكا وكندا', 'الهند وباكستان', 'البرازيل والأرجنتين'], ans: 1, points: 25 },
+        { id: 621, type: 'جغرافيا', icon: 'earth', title: 'جغرافيا آسيا', q: 'الدولة التي تتكون من أكثر من 17 ألف جزيرة هي:', options: ['الفلبين', 'اليابان', 'المالديف', 'إندونيسيا'], ans: 3, points: 20 },
+        { id: 622, type: 'جغرافيا', icon: 'earth', title: 'بحار', q: 'بحر مغلق لا يرتبط بأي محيط ويقع بين أوروبا وآسيا:', options: ['البحر الميت', 'بحر قزوين', 'البحر الأسود', 'بحر البلطيق'], ans: 1, points: 20 },
+        { id: 623, type: 'جغرافيا', icon: 'earth', title: 'أنهار', q: 'نهر الفرات يمر عبر ثلاث دول هي تركيا وسوريا و:', options: ['الأردن', 'لبنان', 'العراق', 'إيران'], ans: 2, points: 15 },
+        { id: 624, type: 'جغرافيا', icon: 'earth', title: 'معالم', q: 'في أي دولة يقع جبل فوجي؟', options: ['الصين', 'الكوريتين', 'اليابان', 'إندونيسيا'], ans: 2, points: 15 },
+        { id: 625, type: 'جغرافيا', icon: 'earth', title: 'قنوات مائية', q: 'قناة تفصل بين الأمريكيتين وتربط المحيط الأطلسي بالهادئ:', options: ['قناة السويس', 'قناة بنما', 'قناة كييل', 'قناة كورينث'], ans: 1, points: 20 },
+
+        // 2. فنون عسكرية (626 - 650)
+        { id: 626, type: 'فنون عسكرية', icon: 'crosshairs', title: 'تكتيك قتالي', q: 'ماذا تعني استراتيجية "الأرض المحروقة"؟', options: ['تدمير كل شيء قد يستفيد منه العدو أثناء الانسحاب', 'حرق خيم العدو ليلاً', 'استخدام القنابل الحارقة فقط', 'الهجوم عبر الصحراء'], ans: 0, points: 25 },
+        { id: 627, type: 'فنون عسكرية', icon: 'crosshairs', title: 'أسلحة شهيرة', q: 'بندقية الكلاشنكوف (AK-47) تم اختراعها في أي دولة؟', options: ['أمريكا', 'ألمانيا', 'الاتحاد السوفيتي', 'الصين'], ans: 2, points: 15 },
+        { id: 628, type: 'فنون عسكرية', icon: 'crosshairs', title: 'معدات جوية', q: 'أي من هذه الطائرات تُصنف كطائرة "شبحية" (Stealth) من الجيل الخامس؟', options: ['F-15 Eagle', 'F-22 Raptor', 'MiG-29', 'Su-35'], ans: 1, points: 30 },
+        { id: 629, type: 'فنون عسكرية', icon: 'crosshairs', title: 'مصطلحات', q: 'ما هو المقصود بمصطلح "اللوجستيات" (Logistics) في العسكرية؟', options: ['فك الشفرات المعقدة', 'التموين وإمداد القوات', 'القوات الخاصة المظلية', 'حرب العصابات'], ans: 1, points: 20 },
+        { id: 630, type: 'فنون عسكرية', icon: 'crosshairs', title: 'أقسام الجيش', q: 'الوحدة العسكرية التي تتعامل بشكل أساسي مع المدافع الثقيلة بعيدة المدى هي:', options: ['المشاة', 'المدرعات', 'المدفعية', 'الاستطلاع'], ans: 2, points: 15 },
+        { id: 631, type: 'فنون عسكرية', icon: 'crosshairs', title: 'استراتيجيات', q: 'تكتيك "حرب العصابات" (Guerrilla Warfare) يعتمد بشكل أساسي على:', options: ['المواجهة المباشرة بالدبابات', 'الكر والفر والكمائن', 'القصف الجوي المكثف', 'الأسلحة النووية'], ans: 1, points: 20 },
+        { id: 632, type: 'فنون عسكرية', icon: 'crosshairs', title: 'دبابات', q: 'دبابة "M1 Abrams" هي دبابة قتال رئيسية تابعة لجيش:', options: ['بريطانيا', 'روسيا', 'ألمانيا', 'الولايات المتحدة'], ans: 3, points: 20 },
+        { id: 633, type: 'فنون عسكرية', icon: 'crosshairs', title: 'تاريخ عسكري', q: 'ما هو الخط الدفاعي الشهير الذي بنته فرنسا بعد الحرب العالمية الأولى؟', options: ['خط بارليف', 'خط ماجينو', 'خط سيغفريد', 'الجدار الأطلسي'], ans: 1, points: 25 },
+        { id: 634, type: 'فنون عسكرية', icon: 'crosshairs', title: 'رتب عسكرية', q: 'أي من هذه الرتب العسكرية تعتبر الأعلى درجة؟', options: ['ملازم', 'رائد', 'عقيد', 'نقيب'], ans: 2, points: 15 },
+        { id: 635, type: 'فنون عسكرية', icon: 'crosshairs', title: 'قوات خاصة', q: 'ما اسم القوات الخاصة البحرية الأمريكية الشهيرة؟', options: ['SAS', 'GIGN', 'Navy SEALs', 'Spetsnaz'], ans: 2, points: 20 },
+        { id: 636, type: 'فنون عسكرية', icon: 'crosshairs', title: 'دفاع جوي', q: 'منظومة "القبة الحديدية" تُستخدم بشكل أساسي لاصطياد:', options: ['الطائرات الشبحية', 'الغواصات', 'الصواريخ قصيرة المدى', 'الأقمار الصناعية'], ans: 2, points: 20 },
+        { id: 637, type: 'فنون عسكرية', icon: 'crosshairs', title: 'مصطلحات قتالية', q: 'مصطلح "No Man\'s Land" أو "المنطقة الحرام" ظهر بشكل واسع في:', options: ['حرب فيتنام', 'الحرب العالمية الأولى', 'حرب الخليج', 'حرب أكتوبر'], ans: 1, points: 25 },
+        { id: 638, type: 'فنون عسكرية', icon: 'crosshairs', title: 'طيران', q: 'ما هي وظيفة مروحيات الأباتشي (Apache) بشكل رئيسي؟', options: ['النقل والإمداد', 'الاستطلاع البحري', 'الهجوم والدعم النيراني', 'التدريب الأولي'], ans: 2, points: 15 },
+        { id: 639, type: 'فنون عسكرية', icon: 'crosshairs', title: 'تكتيك الألماني', q: 'تكتيك "الحرب الخاطفة" الذي اتبعته ألمانيا في الحرب العالمية الثانية يسمى:', options: ['بليتزكريغ (Blitzkrieg)', 'كاميكازي', 'حصار طروادة', 'الخندق العميق'], ans: 0, points: 30 },
+        { id: 640, type: 'فنون عسكرية', icon: 'crosshairs', title: 'أسلحة مضادة', q: 'سلاح RPG يُستخدم بشكل أساسي ضد:', options: ['الطائرات المقاتلة', 'المشاة في الخنادق', 'المدرعات والدبابات', 'الغواصات'], ans: 2, points: 15 },
+        { id: 641, type: 'فنون عسكرية', icon: 'crosshairs', title: 'تاريخ', q: 'من هو المنظّر العسكري الصيني القديم صاحب كتاب "فن الحرب"؟', options: ['صن تزو', 'ماو تسي تونغ', 'كونفوشيوس', 'جنكيز خان'], ans: 0, points: 20 },
+        { id: 642, type: 'فنون عسكرية', icon: 'crosshairs', title: 'بحرية', q: 'أكبر قطعة بحرية في الأسطول عادة وتعمل كمطار عائم تسمى:', options: ['المدمرة', 'الطراد', 'الفرقاطة', 'حاملة الطائرات'], ans: 3, points: 10 },
+        { id: 643, type: 'فنون عسكرية', icon: 'crosshairs', title: 'قناصة', q: 'أشهر قناص في التاريخ والذي لُقب بـ "الموت الأبيض" كان من دولة:', options: ['روسيا', 'فنلندا', 'ألمانيا', 'أمريكا'], ans: 1, points: 35 },
+        { id: 644, type: 'فنون عسكرية', icon: 'crosshairs', title: 'مصطلحات', q: 'ماذا تعني كلمة "Camouflage"؟', options: ['هجوم مضاد', 'تمويه وتخفي', 'استسلام', 'إخلاء طبي'], ans: 1, points: 15 },
+        { id: 645, type: 'فنون عسكرية', icon: 'crosshairs', title: 'دفاع جوي', q: 'منظومة S-400 الدفاعية هي من صناعة:', options: ['الولايات المتحدة', 'فرنسا', 'الصين', 'روسيا'], ans: 3, points: 20 },
+        { id: 646, type: 'فنون عسكرية', icon: 'crosshairs', title: 'تكتيك قتالي', q: 'مصطلح "حركة الكماشة" (Pincer movement) يشير إلى:', options: ['الهجوم من الجناحين لتطويق العدو', 'الانسحاب التكتيكي السريع', 'القصف المدفعي العشوائي', 'القفز المظلي خلف الخطوط'], ans: 0, points: 25 },
+        { id: 647, type: 'فنون عسكرية', icon: 'crosshairs', title: 'أسلحة', q: 'في أي حرب تم استخدام الدبابات لأول مرة في التاريخ؟', options: ['حرب القرم', 'الحرب الأهلية الأمريكية', 'الحرب العالمية الأولى', 'الحرب العالمية الثانية'], ans: 2, points: 25 },
+        { id: 648, type: 'فنون عسكرية', icon: 'crosshairs', title: 'تشكيلات', q: 'وحدة عسكرية تتكون من عدة كتائب ويقودها عادة عقيد أو عميد:', options: ['السرية', 'الفصيلة', 'اللواء', 'الحظيرة'], ans: 2, points: 20 },
+        { id: 649, type: 'فنون عسكرية', icon: 'crosshairs', title: 'مخابرات', q: 'وكالة الاستخبارات المركزية الأمريكية تُعرف اختصاراً بـ:', options: ['MI6', 'CIA', 'KGB', 'Mossad'], ans: 1, points: 10 },
+        { id: 650, type: 'فنون عسكرية', icon: 'crosshairs', title: 'أسلحة دمار', q: 'المدينة الثانية التي ضُربت بالقنبلة الذرية عام 1945 هي:', options: ['طوكيو', 'هيروشيما', 'ناجازاكي', 'أوكيناوا'], ans: 2, points: 15 },
+
+        // 3. تكنولوجيا وسيبراني (651 - 675)
+        { id: 651, type: 'تكنولوجيا', icon: 'tech', title: 'أمن سيبراني', q: 'برمجيات خبيثة تمنع المستخدم من الوصول لنظامه وتطالب بفدية مالية:', options: ['حصان طروادة', 'برامج الفدية (Ransomware)', 'الديدان (Worms)', 'برامج التجسس'], ans: 1, points: 20 },
+        { id: 652, type: 'تكنولوجيا', icon: 'tech', title: 'عتاد (Hardware)', q: 'ما هو المكون الذي يُعتبر "عقل" جهاز الكمبيوتر؟', options: ['اللوحة الأم (Motherboard)', 'وحدة المعالجة المركزية (CPU)', 'القرص الصلب (Hard Drive)', 'ذاكرة الوصول العشوائي (RAM)'], ans: 1, points: 15 },
+        { id: 653, type: 'تكنولوجيا', icon: 'tech', title: 'شبكات', q: 'ماذا يرمز اختصار IP في مصطلحات الإنترنت؟', options: ['Internet Provider', 'Internal Process', 'Internet Protocol', 'Information Pathway'], ans: 2, points: 20 },
+        { id: 654, type: 'تكنولوجيا', icon: 'tech', title: 'لغات برمجة', q: 'اللغة الأساسية المستخدمة في بناء هيكل صفحات الويب هي:', options: ['Python', 'Java', 'HTML', 'C++'], ans: 2, points: 15 },
+        { id: 655, type: 'تكنولوجيا', icon: 'tech', title: 'أمن معلومات', q: 'هجوم التصيّد الاحتيالي (Phishing) يعتمد غالباً على:', options: ['اختراق كلمات المرور بالقوة', 'رسائل بريد أو روابط مزيفة تخدع الضحية', 'إتلاف مكونات الحاسوب المادية', 'التشويش على شبكة الواي فاي'], ans: 1, points: 20 },
+        { id: 656, type: 'تكنولوجيا', icon: 'tech', title: 'شبكات', q: 'تقنية VPN تُستخدم بشكل رئيسي من أجل:', options: ['تسريع الإنترنت', 'تشفير وإخفاء نشاط المستخدم على الشبكة', 'تحميل الملفات الكبيرة', 'تحديث نظام التشغيل'], ans: 1, points: 15 },
+        { id: 657, type: 'تكنولوجيا', icon: 'tech', title: 'تخزين', q: 'وحدة القياس التي تعادل 1024 ميجابايت هي:', options: ['كيلوبايت (KB)', 'جيجابايت (GB)', 'تيرابايت (TB)', 'بايت (Byte)'], ans: 1, points: 15 },
+        { id: 658, type: 'تكنولوجيا', icon: 'tech', title: 'تاريخ التكنولوجيا', q: 'من هو المبرمج الذي أنشأ نظام التشغيل "لينكس" (Linux)؟', options: ['بيل غيتس', 'ستيف جوبز', 'لينوس تورفالدس', 'مارك زوكربيرج'], ans: 2, points: 25 },
+        { id: 659, type: 'تكنولوجيا', icon: 'tech', title: 'أمن سيبراني', q: 'ماذا يُقصد بـ "القبعة البيضاء" (White Hat) في عالم الاختراق؟', options: ['مخترق يسرق البنوك', 'مخترق أخلاقي يكتشف الثغرات لحمايتها', 'شخص لا يفقه شيء بالبرمجة', 'برنامج فيروسي'], ans: 1, points: 20 },
+        { id: 660, type: 'تكنولوجيا', icon: 'tech', title: 'شركات', q: 'أي شركة تمتلك وتطور نظام التشغيل أندرويد (Android)؟', options: ['آبل', 'مايكروسوفت', 'جوجل', 'سامسونج'], ans: 2, points: 10 },
+        { id: 661, type: 'تكنولوجيا', icon: 'tech', title: 'برمجة', q: 'ماذا تعني عملية الـ Debugging؟', options: ['كتابة كود جديد', 'البحث عن الأخطاء البرمجية وإصلاحها', 'تصميم واجهة المستخدم', 'نشر التطبيق'], ans: 1, points: 15 },
+        { id: 662, type: 'تكنولوجيا', icon: 'tech', title: 'شبكات', q: 'بروتوكول نقل النص التشعبي الآمن يُرمز له بـ:', options: ['FTP', 'HTTP', 'HTTPS', 'SMTP'], ans: 2, points: 20 },
+        { id: 663, type: 'تكنولوجيا', icon: 'tech', title: 'مفاهيم سيبرانية', q: 'هجوم حجب الخدمة الموزع الذي يسقط المواقع بكثرة الطلبات يُعرف بـ:', options: ['Malware', 'DDoS', 'Keylogger', 'Spoofing'], ans: 1, points: 30 },
+        { id: 664, type: 'تكنولوجيا', icon: 'tech', title: 'عتاد', q: 'أيهما يعتبر وحدة تخزين بيانات أسرع وأحدث ولا يحتوي على أجزاء متحركة؟', options: ['HDD', 'SSD', 'CD-ROM', 'Floppy Disk'], ans: 1, points: 15 },
+        { id: 665, type: 'تكنولوجيا', icon: 'tech', title: 'تشفير', q: 'التشفير الذي يعتمد على مفتاحين (عام وخاص) يسمى:', options: ['تشفير متماثل', 'تشفير غير متماثل', 'هاش (Hash)', 'تشفير قيصر'], ans: 1, points: 35 },
+        { id: 666, type: 'تكنولوجيا', icon: 'tech', title: 'إنترنت', q: 'ماذا تعني تقنية IoT؟', options: ['إنترنت الأشياء', 'شبكة النقل الداخلي', 'النقل البصري المتكامل', 'معالجة النصوص عبر الإنترنت'], ans: 0, points: 20 },
+        { id: 667, type: 'تكنولوجيا', icon: 'tech', title: 'تكنولوجيا حديثة', q: 'العملة الرقمية (البتكوين) تعتمد بشكل أساسي على تقنية:', options: ['الذكاء الاصطناعي', 'البلوك تشين (Blockchain)', 'الواقع الافتراضي', 'الحوسبة السحابية'], ans: 1, points: 20 },
+        { id: 668, type: 'تكنولوجيا', icon: 'tech', title: 'برمجيات', q: 'برنامج مفتوح المصدر (Open Source) يعني:', options: ['أنه مجاني ولكن لا يمكن التعديل عليه', 'الكود المصدري متاح للجميع لرؤيته وتعديله', 'برنامج يمكن فتحه بدون إنترنت', 'برنامج مخصص للاختراق'], ans: 1, points: 20 },
+        { id: 669, type: 'تكنولوجيا', icon: 'tech', title: 'شبكات لاسلكية', q: 'أحدث معيار معتمد لشبكات الواي فاي (Wi-Fi) حالياً يسمى:', options: ['Wi-Fi 4', 'Wi-Fi 5', 'Wi-Fi 6 / 6E', 'Wi-Fi 8'], ans: 2, points: 25 },
+        { id: 670, type: 'تكنولوجيا', icon: 'tech', title: 'اختصارات', q: 'ماذا تعني URL؟', options: ['Universal Routing Link', 'Uniform Resource Locator', 'Unified RAM Layout', 'User Registration Link'], ans: 1, points: 20 },
+        { id: 671, type: 'تكنولوجيا', icon: 'tech', title: 'أمن سيبراني', q: 'برنامج خبيث يختبئ داخل برنامج يبدو شرعياً وآمناً:', options: ['دودة (Worm)', 'حصان طروادة (Trojan)', 'فيروس الفدية', 'سبام (Spam)'], ans: 1, points: 20 },
+        { id: 672, type: 'تكنولوجيا', icon: 'tech', title: 'ذكاء اصطناعي', q: 'نموذج ChatGPT هو أحد أشكال:', options: ['الواقع المعزز', 'قواعد البيانات العلائقية', 'نماذج اللغات الكبيرة (LLM)', 'أنظمة التشغيل'], ans: 2, points: 15 },
+        { id: 673, type: 'تكنولوجيا', icon: 'tech', title: 'مفاهيم تقنية', q: 'تقديم خدمات الكمبيوتر (التخزين، قواعد البيانات، البرمجيات) عبر الإنترنت يُعرف بـ:', options: ['الحوسبة السحابية', 'التشفير الطرفي', 'البلوك تشين', 'الإنترنت المظلم'], ans: 0, points: 15 },
+        { id: 674, type: 'تكنولوجيا', icon: 'tech', title: 'محركات البحث', q: 'ما هو محرك البحث الذي طورته شركة مايكروسوفت؟', options: ['جوجل', 'ياهو', 'بينج (Bing)', 'دك دك جو'], ans: 2, points: 10 },
+        { id: 675, type: 'تكنولوجيا', icon: 'tech', title: 'تاريخ', q: 'أول رسالة تم إرسالها عبر شبكة ARPANET (جدة الإنترنت) كانت:', options: ['HELLO', 'LOGIN (وصل منها LO فقط)', 'TEST', 'WORLD'], ans: 1, points: 30 },
+
+        // 4. لغات وترجمة (676 - 700)
+        { id: 676, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'ما هي الترجمة الصحيحة لكلمة "Ambush"؟', options: ['هجوم', 'كمين', 'انسحاب', 'هدنة'], ans: 1, points: 15 },
+        { id: 677, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'كلمة "Casualty" في التقارير العسكرية تعني:', options: ['إصابة أو حالة وفاة (خسائر بشرية)', 'نصر كاسح', 'ذخيرة فارغة', 'قائد الفرقة'], ans: 0, points: 25 },
+        { id: 678, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'الترجمة الصحيحة لكلمة "Reconnaissance" أو (Recon) هي:', options: ['التمرد', 'الاستطلاع والاستكشاف', 'المدفعية الثقيلة', 'الإسعاف الميداني'], ans: 1, points: 20 },
+        { id: 679, type: 'لغات', icon: 'language', title: 'ترجمة عامة', q: 'ما هو مرادف كلمة "Ceasefire"؟', options: ['إعلان حرب', 'وقف إطلاق النار', 'قصف جوي', 'تجنيد إجباري'], ans: 1, points: 15 },
+        { id: 680, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'كلمة "Infantry" تشير إلى:', options: ['سلاح الطيران', 'الأسطول البحري', 'سلاح المشاة', 'سلاح المهندسين'], ans: 2, points: 15 },
+        { id: 681, type: 'لغات', icon: 'language', title: 'مصطلحات', q: 'ماذا تعني كلمة "Surrender"؟', options: ['مقاومة', 'استسلام', 'انتصار', 'حصار'], ans: 1, points: 10 },
+        { id: 682, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'مصطلح "Artillery" يترجم إلى:', options: ['الدبابات', 'المدفعية', 'القناصة', 'المظليين'], ans: 1, points: 15 },
+        { id: 683, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'كلمة "Truce" تعني:', options: ['هدنة', 'كمين', 'هجوم مضاد', 'إمدادات'], ans: 0, points: 20 },
+        { id: 684, type: 'لغات', icon: 'language', title: 'مصطلحات', q: 'ماذا يعني مصطلح "Collateral Damage" في الحروب؟', options: ['تلف الأسلحة', 'خسائر جانبية (أضرار غير مقصودة في المدنيين/الممتلكات)', 'تعويضات الحرب', 'انهيار معنويات الجند'], ans: 1, points: 30 },
+        { id: 685, type: 'لغات', icon: 'language', title: 'ترجمة', q: 'الترجمة لكلمة "Ally" أو "Alliance" هي:', options: ['عدو / عداوة', 'حليف / تحالف', 'جاسوس / تجسس', 'خائن / خيانة'], ans: 1, points: 15 },
+        { id: 686, type: 'لغات', icon: 'language', title: 'معاني الكلمات', q: 'ما هو عكس كلمة "Defeat" (هزيمة)؟', options: ['Retreat', 'Victory', 'Surrender', 'Attack'], ans: 1, points: 15 },
+        { id: 687, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'كلمة "Sniper" تعني بالعربية:', options: ['مقاتل', 'جندي', 'قناص', 'ضابط'], ans: 2, points: 10 },
+        { id: 688, type: 'لغات', icon: 'language', title: 'ترجمة', q: 'كلمة "Evacuation" تعني:', options: ['اقتحام', 'إخلاء / إجلاء', 'تدمير', 'تشفير'], ans: 1, points: 20 },
+        { id: 689, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'مصطلح "Ammunition" (Ammo) يشير إلى:', options: ['الذخيرة', 'المدرعات', 'الزي العسكري', 'الرتب العسكرية'], ans: 0, points: 15 },
+        { id: 690, type: 'لغات', icon: 'language', title: 'ترجمة', q: 'ماذا تعني كلمة "Garrison"؟', options: ['حامية عسكرية (قوة مرابطة)', 'طائرة بدون طيار', 'حقل ألغام', 'خندق'], ans: 0, points: 30 },
+        { id: 691, type: 'لغات', icon: 'language', title: 'مصطلحات', q: 'ترجمة كلمة "Flank" في التكتيك العسكري هي:', options: ['قلب الجيش', 'جناح الجيش (الميمنة أو الميسرة)', 'المؤخرة', 'القيادة العامة'], ans: 1, points: 25 },
+        { id: 692, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'كلمة "Intercept" تعني:', options: ['يفجر', 'يعترض (مثل اعتراض صاروخ أو مكالمة)', 'يستسلم', 'يهاجم'], ans: 1, points: 20 },
+        { id: 693, type: 'لغات', icon: 'language', title: 'معاني الكلمات', q: 'ما معنى كلمة "Deploy"؟', options: ['ينسحب', 'ينشر (ينشر القوات في الميدان)', 'يختبئ', 'يستجوب'], ans: 1, points: 20 },
+        { id: 694, type: 'لغات', icon: 'language', title: 'ترجمة', q: 'كلمة "Treason" تعني في القانون العسكري:', options: ['شجاعة', 'ترقية', 'خيانة عظمى', 'تقاعد'], ans: 2, points: 20 },
+        { id: 695, type: 'لغات', icon: 'language', title: 'مصطلحات', q: 'ما هو "Court-martial"؟', options: ['محكمة عسكرية', 'ساحة تدريب', 'مستشفى ميداني', 'مخزن ذخيرة'], ans: 0, points: 25 },
+        { id: 696, type: 'لغات', icon: 'language', title: 'ترجمة', q: 'الترجمة الصحيحة لـ "Casualty Evacuation (CASEVAC)" هي:', options: ['تجنيد الإناث', 'الإخلاء الطبي للمصابين', 'القصف العشوائي', 'الهجوم المباغت'], ans: 1, points: 25 },
+        { id: 697, type: 'لغات', icon: 'language', title: 'كلمات أساسية', q: 'ما معنى كلمة "Hostage"؟', options: ['رهينة', 'قائد', 'مترجم', 'طبيب'], ans: 0, points: 15 },
+        { id: 698, type: 'لغات', icon: 'language', title: 'كلمات أساسية', q: 'كلمة "Treaty" تعني:', options: ['معاهدة / اتفاقية', 'تهديد', 'انسحاب', 'غواصة'], ans: 0, points: 20 },
+        { id: 699, type: 'لغات', icon: 'language', title: 'مصطلحات', q: 'مصطلح "Rules of Engagement (ROE)" يعني:', options: ['خطة الانسحاب', 'قواعد الاشتباك', 'رواتب الجند', 'أسماء الشفرات'], ans: 1, points: 20 },
+        { id: 700, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'كلمة "Fleet" تشير إلى:', options: ['أسطول بحري', 'سرب طائرات', 'سرية مشاة', 'قاعدة برية'], ans: 0, points: 15 }
+    ];
+
+    const challengesDB = [...manualChallengesDB, ...generatedPhysicalChallenges, ...generatedMorseChallenges, ...nervesChallenges];
+
+    const allBadges = [
+        { id: 'b1', title: 'جندي مستجد', icon: 'star', reqP: 100 },
+        { id: 'b2', title: 'الانضباط', icon: 'award', reqP: 500 },
+        { id: 'b3', title: 'نوط الشجاعة', icon: 'shield', reqP: 1500 },
+        { id: 'b4', title: 'نجمة المعركة', icon: 'star', reqP: 4000 },
+        { id: 'b5', title: 'وسام الأسطورة', icon: 'crown', reqP: 10000 }
+    ];
+
+    let daily = {};
+    let currentActiveChallenge = null;
+    let pendingReward = null; 
+    let adCheckInterval = null; 
+    let nActive = false;
+    let nClicksCount = 0;
+    let nTimeLeft = 0;
+    let nInterval = null;
+
+    function updateUI() {
+        document.getElementById('userPoints').innerText = userObj.points;
+        let pts = userObj.points;
+        let rank = 'جندي'; 
+        if(pts >= 10000) rank = 'مشير'; else if(pts >= 6000) rank = 'لواء'; else if(pts >= 3500) rank = 'عقيد';
+        else if(pts >= 1800) rank = 'رائد'; else if(pts >= 800) rank = 'نقيب'; else if(pts >= 300) rank = 'ملازم';
+        else if(pts >= 100) rank = 'رقيب';
+        
+        userObj.rank = rank;
+        document.getElementById('userRank').innerText = rank;
+        saveUserDataLocally(); 
+
+        let badgesContainer = document.getElementById('userBadges');
+        badgesContainer.innerHTML = '';
+        allBadges.forEach(b => {
+            let isUnlocked = (b.reqP > 0 && pts >= b.reqP);
+            badgesContainer.innerHTML += `
+                <div class="badge-item ${isUnlocked ? '' : 'locked'}">
+                    <div class="icon-holder">${getIcon(b.icon)}</div>
+                    <div class="b-title">${b.title}</div>
+                    <div class="b-req">${b.reqP} نقطة</div>
+                </div>`;
+        });
+    }
+
+    // ==========================================
+    // تهيئة التحديات وتوزيعها
+    // ==========================================
+    function initDailyChallenges() {
+        let today = getLocalTodayDateString();
+        let savedDaily = localStorage.getItem('militaryDaily_local');
+        
+        if (savedDaily) {
+            daily = JSON.parse(savedDaily);
+            if (daily.date !== today) {
+                generateNewChallenges(today);
+            } else if (daily.doublePointsState && daily.doublePointsState.active) {
+                pendingReward = { id: daily.doublePointsState.id, basePoints: daily.doublePointsState.basePoints };
+                currentActiveChallenge = { id: pendingReward.id, flow: 'doublePoints' };
+                if (navigator.onLine) {
+                    openAdModalWithCheck(daily.doublePointsState, 2);
+                } else {
+                    claimNormalPoints(); // إذا لم يكن هناك نت، يتم استلام العادية فقط
+                }
+            }
+        } else {
+            generateNewChallenges(today);
+        }
+        renderChallenges();
+    }
+
+    function generateNewChallenges(todayStr) {
+        let completed = userObj.completedAllTime || [];
+        let available = challengesDB.filter(c => !completed.includes(c.id));
+
+        let physicalAvail = available.filter(c => c.type === 'بدني');
+        let nervesAvail = available.filter(c => c.type === 'أعصاب');
+        let otherTypes = [...new Set(available.filter(c => c.type !== 'بدني' && c.type !== 'أعصاب').map(c => c.type))];
+
+        if (physicalAvail.length === 0 || nervesAvail.length === 0 || otherTypes.length < 4) {
+            userObj.completedAllTime = [];
+            completed = []; 
+            saveUserDataLocally();
+            available = challengesDB;
+            physicalAvail = available.filter(c => c.type === 'بدني');
+            nervesAvail = available.filter(c => c.type === 'أعصاب');
+            otherTypes = [...new Set(available.filter(c => c.type !== 'بدني' && c.type !== 'أعصاب').map(c => c.type))];
+        }
+
+        let chosen = [];
+        if (physicalAvail.length > 0) chosen.push(physicalAvail[Math.floor(Math.random() * physicalAvail.length)]);
+        if (nervesAvail.length > 0) chosen.push(nervesAvail[Math.floor(Math.random() * nervesAvail.length)]);
+
+        otherTypes.sort(() => 0.5 - Math.random()); 
+        let selected4Types = otherTypes.slice(0, 4); 
+        
+        selected4Types.forEach(t => {
+            let tChallenges = available.filter(c => c.type === t);
+            chosen.push(tChallenges[Math.floor(Math.random() * tChallenges.length)]);
+        });
+
+        chosen.sort(() => 0.5 - Math.random());
+
+        daily = {
+            date: todayStr,
+            list: chosen.map(c => c.id),
+            extraMission: chosen[chosen.length - 1].id, 
+            adProgress: {},
+            doublePointsState: { active: false, id: null, basePoints: 0, count: 0, lastTime: 0 }, 
+            completedToday: []
+        };
+        localStorage.setItem('militaryDaily_local', JSON.stringify(daily));
+    }
+
+    function renderChallenges() {
+        let container = document.getElementById('challengesList');
+        container.innerHTML = '';
+
+        daily.list.forEach(id => {
+            let c = challengesDB.find(x => x.id === id);
+            let isCompleted = daily.completedToday.includes(id);
+            let adProg = daily.adProgress[id] || {};
+            let needsRetry = adProg.needsRetry === true;
+            
+            let card = document.createElement('div');
+            card.className = `card ${isCompleted ? 'completed' : ''} ${needsRetry ? 'needs-retry' : ''}`;
+            
+            let actionBtnHtml = '';
+            if (isCompleted) {
+                actionBtnHtml = `<button class="btn" style="padding:10px; font-size:13px;">${getIcon('check')} تمت بنجاح</button>`;
+            } else if (needsRetry) {
+                actionBtnHtml = `<button class="btn btn-warning" id="btnOpen_${c.id}" style="padding:10px; font-size:13px;">${getIcon('play')} إعادة المحاولة بإعلان</button>`;
+            } else {
+                actionBtnHtml = `<button class="btn" id="btnOpen_${c.id}" style="padding:10px; font-size:13px;">تنفيذ المهمة</button>`;
+            }
+
+            card.innerHTML = `
+                <div class="challenge-header">
+                    <span class="tag"><span style="font-size:14px">${getIcon(c.icon)}</span> ${c.type}</span>
+                    <span style="color: var(--accent); font-weight: 900; font-size:16px;">+${c.points}</span>
+                </div>
+                <h3 style="margin: 8px 0 4px 0; font-size: 14px;">${c.title}</h3>
+                ${actionBtnHtml}
+            `;
+            container.appendChild(card);
+
+            setTimeout(() => {
+                let btn = document.getElementById(`btnOpen_${c.id}`);
+                if(btn) btn.onclick = () => openChallenge(c.id, needsRetry);
+            }, 0);
+        });
+    }
+
+    // ==========================================
+    // فتح التحديات والمحاولة بإعلان
+    // ==========================================
+    window.openChallenge = function(id, needsRetry) {
+        if (needsRetry) {
+            if (!navigator.onLine) {
+                alert("إعادة المحاولة تتطلب اتصالاً بالإنترنت لمشاهدة الإعلان العقابي.");
+                return;
+            }
+            if(!daily.adProgress[id]) daily.adProgress[id] = { count: 0, lastTime: 0, needsRetry: true };
+            currentActiveChallenge = { id: id, flow: 'retry', max: 1 };
+            openAdModalWithCheck(daily.adProgress[id], 1);
+        } else {
+            showChallengeContent(id);
+        }
+    };
+
+    function showChallengeContent(id) {
+        let ch = challengesDB.find(x => x.id === id);
+        if (ch.type === 'بدني') {
+            currentActiveChallenge = { id: ch.id, points: ch.points };
+            document.getElementById('sTitle').innerText = ch.title;
+            document.getElementById('sDesc').innerText = ch.desc;
+            document.getElementById('sportModal').style.display = 'flex';
+        } else if (ch.type === 'أعصاب') {
+            startNervesModal(ch);
+        } else {
+            showQuestion(ch);
+        }
+    }
+
+    // ==========================================
+    // نظام الإعلانات (للمضاعفة أو إعادة المحاولة)
+    // ==========================================
+    function openAdModalWithCheck(tracker, requiredAds) {
+        if (!navigator.onLine) {
+            alert("تنبيه: لا يوجد اتصال بالإنترنت. هذه العملية تتطلب اتصالاً بالشبكة.");
+            return;
+        }
+        
+        document.getElementById('adRequired').innerText = requiredAds;
+        document.getElementById('adCurrent').innerText = tracker.count || 0;
+        
+        let btn = document.getElementById('btnExecuteAd');
+        if (adCheckInterval) { clearInterval(adCheckInterval); adCheckInterval = null; }
+        
+        btn.disabled = false;
+        btn.innerHTML = `${getIcon('play')} تنفيذ الأوامر`;
+        document.getElementById('adDesc').innerText = `يتطلب هذا الإجراء التوجه لقسم الإعلانات ${requiredAds} مرة/مرات.`;
+        
+        document.getElementById('adModal').style.display = 'flex';
+    }
+
+    window.executeAdVisit = function() {
+        let btn = document.getElementById('btnExecuteAd');
+        if (btn.disabled || !navigator.onLine) return; 
+
+        window.location.href = "go:557"; 
+        btn.disabled = true;
+        let checkTime = 10; 
+        btn.innerHTML = `<span class="icon-holder">${getIcon('stopwatch')}</span> جاري التحقق (${checkTime}ث)...`;
+
+        if (adCheckInterval) clearInterval(adCheckInterval);
+
+        adCheckInterval = setInterval(() => {
+            checkTime--;
+            if (checkTime > 0) {
+                btn.innerHTML = `<span class="icon-holder">${getIcon('stopwatch')}</span> جاري التحقق (${checkTime}ث)...`;
+            } else {
+                clearInterval(adCheckInterval);
+                adCheckInterval = null;
+                
+                let tracker, requiredAds;
+                if (currentActiveChallenge.flow === 'doublePoints') {
+                    tracker = daily.doublePointsState;
+                    requiredAds = 2;
+                } else if (currentActiveChallenge.flow === 'retry') {
+                    tracker = daily.adProgress[currentActiveChallenge.id];
+                    requiredAds = 1;
+                }
+
+                tracker.count = (tracker.count || 0) + 1;
+                tracker.lastTime = Date.now();
+                localStorage.setItem('militaryDaily_local', JSON.stringify(daily));
+                document.getElementById('adCurrent').innerText = tracker.count;
+
+                if (tracker.count >= requiredAds) {
+                    document.getElementById('adModal').style.display = 'none';
+                    if (currentActiveChallenge.flow === 'doublePoints') {
+                        alert('أحسنت أيها البطل! تمت مضاعفة نقاطك بنجاح.');
+                        finishChallengeFinal(daily.doublePointsState.id, daily.doublePointsState.basePoints * 2);
+                        daily.doublePointsState = { active: false, id: null, basePoints: 0, count: 0, lastTime: 0 };
+                        localStorage.setItem('militaryDaily_local', JSON.stringify(daily));
+                    } else if (currentActiveChallenge.flow === 'retry') {
+                        tracker.needsRetry = false;
+                        tracker.count = 0;
+                        localStorage.setItem('militaryDaily_local', JSON.stringify(daily));
+                        showChallengeContent(currentActiveChallenge.id);
+                    }
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = `${getIcon('play')} تنفيذ الزيارة التالية`;
+                }
+            }
+        }, 1000);
+    };
+
+    // ==========================================
+    // نظام الجوائز والتحقق
+    // ==========================================
+    function triggerRewardPhase(id, points) {
+        pendingReward = { id: id, basePoints: points };
+        document.getElementById('rewardPoints').innerText = points;
+        document.getElementById('rewardModal').style.display = 'flex';
+        updateConnStatus(); // لتحديث ظهور زر الإعلان
+    }
+
+    window.claimNormalPoints = function() {
+        document.getElementById('rewardModal').style.display = 'none';
+        if(daily.doublePointsState) {
+            daily.doublePointsState = { active: false, id: null, basePoints: 0, count: 0, lastTime: 0 };
+            localStorage.setItem('militaryDaily_local', JSON.stringify(daily));
+        }
+        finishChallengeFinal(pendingReward.id, pendingReward.basePoints);
+    }
+
+    window.startDoublePointsFlow = function() {
+        if (!navigator.onLine) { alert("المضاعفة تتطلب إنترنت"); return; }
+        if (!daily.doublePointsState) daily.doublePointsState = { active: false, count: 0, lastTime: 0 };
+        daily.doublePointsState.active = true;
+        daily.doublePointsState.id = pendingReward.id;
+        daily.doublePointsState.basePoints = pendingReward.basePoints;
+        localStorage.setItem('militaryDaily_local', JSON.stringify(daily));
+        
+        currentActiveChallenge = { id: pendingReward.id, flow: 'doublePoints' };
+        document.getElementById('rewardModal').style.display = 'none';
+        openAdModalWithCheck(daily.doublePointsState, 2);
+    }
+
+    function finishChallengeFinal(id, finalPoints) {
+        daily.completedToday.push(id);
+        userObj.points += finalPoints;
+        
+        if(!userObj.completedAllTime) userObj.completedAllTime = [];
+        userObj.completedAllTime.push(id); 
+        
+        saveUserDataLocally();
+        localStorage.setItem('militaryDaily_local', JSON.stringify(daily));
+        
+        updateUI();
+        renderChallenges();
+    }
+
+    window.confirmSportChallenge = function() {
+        document.getElementById('sportModal').style.display = 'none';
+        triggerRewardPhase(currentActiveChallenge.id, currentActiveChallenge.points);
+    };
+
+    function showQuestion(ch) {
+        document.getElementById('qText').innerHTML = ch.q; 
+        let grid = document.getElementById('qOptions');
+        grid.innerHTML = '';
+        
+        ch.options.forEach((opt, idx) => {
+            let btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = opt; 
+            btn.onclick = () => checkAnswer(ch.id, idx, ch.ans, ch.points);
+            grid.appendChild(btn);
+        });
+        document.getElementById('questionModal').style.display = 'flex';
+    }
+
+    function checkAnswer(id, selected, correct, points) {
+        document.getElementById('questionModal').style.display = 'none';
+        if (selected === correct) {
+            triggerRewardPhase(id, points);
+        } else {
+            alert('إجابة خاطئة! تم قفل المهمة كعقاب. يمكنك إعادة المحاولة بمشاهدة إعلان عسكري.');
+            if(!daily.adProgress[id]) daily.adProgress[id] = { count: 0, lastTime: 0 };
+            daily.adProgress[id].needsRetry = true;
+            localStorage.setItem('militaryDaily_local', JSON.stringify(daily));
+            renderChallenges();
+        }
+    }
+
+    function startNervesModal(ch) {
+        currentActiveChallenge = ch;
+        nActive = false; nClicksCount = 0; nTimeLeft = ch.time;
+        document.getElementById('nTitle').innerText = ch.title;
+        document.getElementById('nDesc').innerText = ch.desc;
+        document.getElementById('nClicks').innerText = "0";
+        document.getElementById('nTimer').innerText = nTimeLeft;
+        document.getElementById('nervesModal').style.display = 'flex';
+    }
+
+    window.tapNerves = function() {
+        if (!nActive) {
+            nActive = true;
+            nInterval = setInterval(() => {
+                nTimeLeft--;
+                document.getElementById('nTimer').innerText = nTimeLeft;
+                if (nTimeLeft <= 0) {
+                    clearInterval(nInterval);
+                    nActive = false;
+                    checkNervesResult();
+                }
+            }, 1000);
+        }
+        if (nTimeLeft > 0) {
+            nClicksCount++;
+            document.getElementById('nClicks').innerText = nClicksCount;
+        }
+    };
+
+    function checkNervesResult() {
+        document.getElementById('nervesModal').style.display = 'none';
+        if (nClicksCount >= currentActiveChallenge.target) {
+            triggerRewardPhase(currentActiveChallenge.id, currentActiveChallenge.points);
+        } else {
+            alert(`للأسف! وصلت لـ ${nClicksCount} نقرة فقط. تم قفل المهمة كعقاب، جرب إعادة المحاولة.`);
+            if(!daily.adProgress[currentActiveChallenge.id]) daily.adProgress[currentActiveChallenge.id] = { count: 0, lastTime: 0 };
+            daily.adProgress[currentActiveChallenge.id].needsRetry = true;
+            localStorage.setItem('militaryDaily_local', JSON.stringify(daily));
+            renderChallenges();
+        }
+    }
+
+    window.closeNervesModal = function() {
+        clearInterval(nInterval); nActive = false;
+        document.getElementById('nervesModal').style.display = 'none';
+    };
+
+    function updateTimer() {
+        const now = new Date();
+        const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        const diff = tomorrow - now;
+        
+        const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        const el = document.getElementById('countdownTimer');
+        if(el) el.innerText = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        
+        if(h === 0 && m === 0 && s === 0) setTimeout(initDailyChallenges, 2000);
+    }
+    setInterval(updateTimer, 1000);
+    updateTimer();
+
+    window.switchTab = function(tab) {
+        document.getElementById('profilePage').classList.remove('active');
+        document.getElementById('challengesPage').classList.remove('active');
+        document.getElementById('navProfile').classList.remove('active');
+        document.getElementById('navChallenges').classList.remove('active');
+        
+        if(tab === 'profile') {
+            document.getElementById('profilePage').classList.add('active');
+            document.getElementById('navProfile').classList.add('active');
+        } else {
+            document.getElementById('challengesPage').classList.add('active');
+            document.getElementById('navChallenges').classList.add('active');
+        }
+    };
+
+    window.closeModal = function(id) { 
+        document.getElementById(id).style.display = 'none'; 
+        if(id === 'adModal') {
+            if(adCheckInterval) {
+                clearInterval(adCheckInterval);
+                adCheckInterval = null;
+            }
+            if(currentActiveChallenge && currentActiveChallenge.flow === 'doublePoints') {
+                document.getElementById('rewardModal').style.display = 'flex';
+            }
+        }
+    };
+</script>
+</body>
+</html>
