@@ -8,7 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg-main: #0c0d0c; --surface: #1a1d1a; --primary: #4b5320; /* سيتم تغييره برمجيا حسب السلاح */
+            --bg-main: #0c0d0c; --surface: #1a1d1a; --primary: #4b5320; 
             --accent: #ffd700; --text-light: #f5f5f5; --text-muted: #999;
             --danger: #b32424; --success: #27ae60; --border: #2c332c;
         }
@@ -38,12 +38,15 @@
         .card { background-color: var(--surface); border-radius: 12px; padding: 15px; margin-bottom: 15px; border-right: 4px solid var(--accent); box-shadow: 0 4px 8px rgba(0,0,0,0.4); position: relative; }
         .btn { background-color: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; width: 100%; margin-top: 10px; font-family: 'Cairo'; font-weight: 900; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
         .btn:active { transform: scale(0.98); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(50%); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(60%); }
         .btn-accent { background-color: var(--accent); color: #000; }
         .btn-danger { background-color: var(--danger); }
         .btn-success { background-color: var(--success); }
         .btn-warning { background-color: #d35400; color: white; }
         
+        /* شريط تحذيري للأزرار الأوفلاين */
+        .offline-ribbon { background: repeating-linear-gradient(45deg, #b32424, #b32424 10px, #801a1a 10px, #801a1a 20px) !important; color: #fff !important; pointer-events: none; opacity: 0.8; }
+
         /* الملف الشخصي */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .stat-box { background: #111; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid var(--border); }
@@ -52,11 +55,12 @@
         
         /* الأوسمة */
         .badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 10px; }
-        .badge-item { background: #111; border: 1px solid var(--border); padding: 10px 5px; border-radius: 8px; text-align: center; transition: 0.3s; }
+        .badge-item { background: #111; border: 1px solid var(--border); padding: 10px 5px; border-radius: 8px; text-align: center; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .badge-item .icon-holder { font-size: 24px; color: var(--accent); margin-bottom: 5px; display: flex; justify-content: center; }
-        .badge-item .b-title { font-size: 10px; font-weight: bold; color: var(--text-light); }
+        .badge-item .b-title { font-size: 11px; font-weight: bold; color: var(--text-light); }
         .badge-item .b-req { font-size: 9px; color: var(--text-muted); margin-top: 3px; display: block; }
-        .badge-item.locked { opacity: 0.4; filter: grayscale(100%); }
+        .badge-item.locked { opacity: 0.3; filter: grayscale(100%); border-color: #222; }
+        .badge-item.locked .icon-holder { color: #555; }
 
         /* تحديات وموقت */
         .timer-header { text-align: center; background: var(--surface); padding: 15px; border-bottom: 2px solid var(--primary); margin: -15px -15px 15px -15px; border-radius: 0 0 15px 15px; }
@@ -72,7 +76,7 @@
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 6000; justify-content: center; align-items: center; padding: 15px; backdrop-filter: blur(5px); }
         .modal-content { background-color: var(--surface); padding: 20px; border-radius: 12px; width: 100%; max-width: 360px; text-align: center; border: 1px solid var(--accent); position: relative; }
         .options-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 15px; }
-        .option-btn { background: #111; padding: 12px; border: 1px solid var(--primary); border-radius: 8px; color: white; cursor: pointer; font-family: 'Cairo'; font-size: 13px; font-weight: bold; transition: 0.2s; line-height: 1.5; }
+        .option-btn { background: #111; padding: 12px; border: 1px solid var(--primary); border-radius: 8px; color: white; cursor: pointer; font-family: 'Cairo'; font-size: 13px; font-weight: bold; transition: 0.2s; line-height: 1.5; text-align: right; }
         .option-btn:active { background: var(--primary); }
 
         .tap-btn { width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(circle, var(--danger) 40%, #500 100%); border: 6px solid #fff; box-shadow: 0 0 25px rgba(179, 36, 36, 0.8); color: white; font-size: 28px; font-weight: 900; margin: 20px auto; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; transition: 0.1s; font-family: 'Cairo'; }
@@ -80,6 +84,7 @@
 
         #loader { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(12, 13, 12, 0.95); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
         .spinner { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--accent); border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; margin-bottom: 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         #no-camp-overlay { display: none; }
     </style>
@@ -102,6 +107,16 @@
         </div>
     </div>
 
+    <!-- نافذة الرسائل الشيك البديلة للـ alert -->
+    <div id="infoModal" class="modal">
+        <div class="modal-content" id="infoModalContent" style="border-color: var(--accent);">
+            <div id="infoModalIcon" style="font-size: 45px; margin-bottom: 10px; display: flex; justify-content: center;"></div>
+            <h3 id="infoModalTitle" style="margin: 0 0 10px 0; font-size: 18px;"></h3>
+            <p id="infoModalText" style="font-size: 14px; margin: 0 0 20px 0; color: #ccc; line-height: 1.6;"></p>
+            <button class="btn" id="infoModalBtn" onclick="closeModal('infoModal')">مفهوم</button>
+        </div>
+    </div>
+
     <div id="mainApp" style="display: none;">
         
         <div id="challengesPage" class="page active">
@@ -117,6 +132,10 @@
                 <div id="ic-profile-avatar" style="font-size: 45px; color: var(--accent); margin-bottom: 5px; display: flex; justify-content: center;"></div>
                 <h2 id="userName" style="margin:0; font-size: 20px;">...</h2>
                 <p style="margin: 5px 0 0 0; font-size: 12px; color: var(--text-muted);"><span id="ic-shield"></span> <span id="userWeaponDisp">...</span></p>
+                <!-- زر مشاركة الانجازات الجديد -->
+                <button class="btn btn-accent" style="margin-top: 15px; font-size: 12px; padding: 8px;" onclick="shareAchievements()">
+                    <span id="ic-share"></span> مشاركة الإنجازات العسكرية
+                </button>
             </div>
 
             <div class="stats-grid">
@@ -158,10 +177,10 @@
             <h3 style="color: var(--success); margin-top: 0; font-size: 18px; display: flex; justify-content: center; align-items: center; gap: 8px;"><span id="ic-success"></span> مهمة ناجحة!</h3>
             <p style="font-size: 14px;">لقد حصلت على <strong id="rewardPoints" style="color: var(--accent); font-size: 18px;">0</strong> نقطة.</p>
             <div style="margin-top: 20px;" id="rewardActions">
-                <button class="btn btn-accent" onclick="startDoublePointsFlow()"><span id="ic-bolt"></span> مضاعفة النقاط (بإعلانين)</button>
-                <button class="btn" style="background-color: #333;" onclick="claimNormalPoints()"><span id="ic-cash"></span> استلام النقاط الحالية فقط</button>
+                <!-- زر مضاعفة النقاط تم تخصيصه وتجهيزه برمجياً -->
+                <button class="btn btn-accent" id="btnDoublePoints" onclick="startDoublePointsFlow()"><span id="ic-bolt"></span> مضاعفة النقاط (بإعلانين)</button>
+                <button class="btn" style="background-color: #333; margin-top: 8px;" onclick="claimNormalPoints()"><span id="ic-cash"></span> استلام النقاط الحالية فقط</button>
             </div>
-            <p id="offlineRewardMsg" style="display: none; color: var(--danger); font-size: 11px; margin-top: 10px;">المضاعفة تتطلب اتصالاً بالإنترنت</p>
         </div>
     </div>
 
@@ -172,7 +191,7 @@
                 <div id="ic-dumbbell-lg" style="font-size: 24px; color: var(--text-muted); margin-bottom: 10px; display: flex; justify-content: center;"></div>
                 <p id="sDesc" style="font-size: 14px; font-weight: bold; margin: 0;"></p>
             </div>
-            <button class="btn" onclick="confirmSportChallenge()"><span id="ic-check-double"></span> أتممت المهمة بنجاح</button>
+            <button class="btn btn-success" onclick="confirmSportChallenge()"><span id="ic-check-double"></span> أتممت المهمة بنجاح</button>
             <button class="btn btn-danger" onclick="closeModal('sportModal')">تأجيل</button>
         </div>
     </div>
@@ -211,7 +230,7 @@
 
 <script>
     // ==========================================
-    // 0. إدارة الأيقونات (Online / Offline)
+    // 0. إدارة الأيقونات (Online / Offline) التلقائية
     // ==========================================
     const SVGS = {
         crosshairs: `<svg viewBox="0 0 24 24" class="svg-icon"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line></svg>`,
@@ -238,7 +257,8 @@
         warning: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
         cash: `<svg viewBox="0 0 24 24" class="svg-icon"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle></svg>`,
         wifi_on: `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>`,
-        wifi_off: `<svg viewBox="0 0 24 24" class="svg-icon"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path><path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>`
+        wifi_off: `<svg viewBox="0 0 24 24" class="svg-icon"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path><path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>`,
+        share: `<svg viewBox="0 0 24 24" class="svg-icon"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>`
     };
 
     const ONLINES = {
@@ -266,7 +286,8 @@
         warning: "fa-solid fa-triangle-exclamation",
         cash: "fa-solid fa-hand-holding-dollar",
         wifi_on: "fas fa-wifi",
-        wifi_off: "fas fa-wifi-slash"
+        wifi_off: "fas fa-wifi-slash",
+        share: "fa-solid fa-share-nodes"
     };
 
     function getIcon(name) {
@@ -291,28 +312,70 @@
         document.getElementById('ic-cash').innerHTML = getIcon('cash');
         document.getElementById('ic-dumbbell-lg').innerHTML = getIcon('dumbbell');
         document.getElementById('ic-brain').innerHTML = getIcon('brain');
+        const shareIc = document.getElementById('ic-share');
+        if(shareIc) shareIc.innerHTML = getIcon('share');
     }
 
     function updateConnStatus() {
         const statusBox = document.getElementById('conn-status');
         const iconHolder = document.getElementById('conn-icon');
         const textHolder = document.getElementById('conn-text');
+        const doubleBtn = document.getElementById('btnDoublePoints');
         
         if (navigator.onLine) {
             iconHolder.innerHTML = getIcon('wifi_on');
             textHolder.innerHTML = '<span style="color:#2ecc71; margin-right:5px;">متصل بالقيادة</span>';
             statusBox.style.display = 'flex';
-            document.getElementById('rewardActions').style.display = 'block';
-            document.getElementById('offlineRewardMsg').style.display = 'none';
+            statusBox.style.opacity = '1';
+            
+            if(doubleBtn) {
+                doubleBtn.innerHTML = `<span id="ic-bolt"></span> مضاعفة النقاط (بإعلانين)`;
+                doubleBtn.disabled = false;
+                doubleBtn.className = "btn btn-accent";
+                document.getElementById('ic-bolt').innerHTML = getIcon('bolt');
+            }
+            
             setTimeout(() => { if(navigator.onLine) statusBox.style.opacity = '0'; setTimeout(()=> { if(statusBox.style.opacity === '0') statusBox.style.display='none'; }, 500); }, 3000);
         } else {
             iconHolder.innerHTML = getIcon('wifi_off');
             textHolder.innerHTML = '<span style="color:#e74c3c; margin-right:5px;">وضعية الأوفلاين نشطة</span>';
             statusBox.style.display = 'flex';
             statusBox.style.opacity = '1';
-            document.getElementById('rewardActions').style.display = 'none';
-            document.getElementById('offlineRewardMsg').style.display = 'block';
+            
+            if(doubleBtn) {
+                doubleBtn.innerHTML = `<i class="fas fa-wifi-slash"></i> لا يوجد اتصال بالإنترنت`;
+                doubleBtn.disabled = true;
+                doubleBtn.className = "btn btn-danger";
+            }
         }
+    }
+
+    // نافذة تنبيه مخصصة شيك وعسكرية بديلة لـ alert
+    function showMilitaryAlert(title, message, isSuccess = true) {
+        const modal = document.getElementById('infoModal');
+        const content = document.getElementById('infoModalContent');
+        const icon = document.getElementById('infoModalIcon');
+        const titleH = document.getElementById('infoModalTitle');
+        const textP = document.getElementById('infoModalText');
+        const btn = document.getElementById('infoModalBtn');
+
+        if(isSuccess) {
+            content.style.borderColor = "var(--success)";
+            icon.style.color = "var(--success)";
+            icon.innerHTML = getIcon('check_double');
+            titleH.style.color = "var(--success)";
+            btn.className = "btn btn-success";
+        } else {
+            content.style.borderColor = "var(--danger)";
+            icon.style.color = "var(--danger)";
+            icon.innerHTML = getIcon('warning');
+            titleH.style.color = "var(--danger)";
+            btn.className = "btn btn-danger";
+        }
+
+        titleH.innerText = title;
+        textP.innerText = message;
+        modal.style.display = "flex";
     }
 
     // ==========================================
@@ -324,8 +387,18 @@
     };
     const weaponNames = {
         war: 'سلاح المشاة', navy: 'القوات البحرية', air: 'القوات الجوية', police: 'هيئة الشرطة',
-        def: 'الدفاع الجوي', med: 'الطب العسكري', tech: 'الفنية العسكرية', it: 'التكنولوجيا العسكرية'
+        def: 'الدفاع الجوي', med: 'الطب العسكري', tech: 'الكلية الفنية العسكرية', it: 'كلية تكنولوجيا العلوم العسكرية'
     };
+
+    // مصفوفة الأوسمة المقررة في النظام
+    const APP_BADGES = [
+        { key: 'b_fresh', title: 'وسام المستجد', req: 'جمع 50 نقطة', minPoints: 50, icon: 'star' },
+        { key: 'b_fighter', title: 'المقاتل الشجاع', req: 'جمع 200 نقطة', minPoints: 200, icon: 'award' },
+        { key: 'b_decoder', title: 'صائد الشفرات', req: 'جمع 500 نقطة', minPoints: 500, icon: 'radio' },
+        { key: 'b_fitness', title: 'بطل اللياقة البدنية', req: 'جمع 1000 نقطة', minPoints: 1000, icon: 'dumbbell' },
+        { key: 'b_strat', title: 'الخبير الاستراتيجي', req: 'جمع 2000 نقطة', minPoints: 2000, icon: 'brain' },
+        { key: 'b_general', title: 'الجنرال الماسي', req: 'جمع 4000 نقطة', minPoints: 4000, icon: 'crown' }
+    ];
 
     let campData = JSON.parse(localStorage.getItem('militaryOS_user'));
     let userObj = {
@@ -340,6 +413,46 @@
         localStorage.setItem('تحديات_مكتملة', JSON.stringify(userObj.completedAllTime));
     }
 
+    function updateRankBasedOnPoints() {
+        if(userObj.points >= 4000) userObj.rank = "فريق أول";
+        else if(userObj.points >= 2500) userObj.rank = "لواء";
+        else if(userObj.points >= 1500) userObj.rank = "عميد";
+        else if(userObj.points >= 900) userObj.rank = "مقدم";
+        else if(userObj.points >= 500) userObj.rank = "رائد";
+        else if(userObj.points >= 250) userObj.rank = "نقيب";
+        else if(userObj.points >= 100) userObj.rank = "ملازم أول";
+        else userObj.rank = "جندي";
+        saveUserDataLocally();
+    }
+
+    // نظام نسخ ومشاركة الانجازات مرتب ومنسق
+    function shareAchievements() {
+        updateRankBasedOnPoints();
+        const college = weaponNames[campData.weapon] || 'القوات المسلحة';
+        
+        let earnedBadges = [];
+        APP_BADGES.forEach(b => {
+            if(userObj.points >= b.minPoints) earnedBadges.push(`🎖️ ${b.title}`);
+        });
+        if(earnedBadges.length === 0) earnedBadges.push("لا يوجد أوسمة مكتسبة حتى الآن");
+
+        const shareText = `🎖️ *تقرير الإنجاز العسكري الميداني* 🎖️\n` +
+                          `-----------------------------------\n` +
+                          `👤 *الاسم:* ${campData.name}\n` +
+                          `⚔️ *الرتبة الحالية:* ${userObj.rank}\n` +
+                          `🏛️ *الكلية / السلاح:* ${college}\n` +
+                          `✨ *مجموع النقاط المكتسبة:* ${userObj.points} نقطة\n\n` +
+                          `🏆 *الأوسمة والأنواط الحاصل عليها:*\n${earnedBadges.join('\n')}\n` +
+                          `-----------------------------------\n` +
+                          `📱 تم إنشاؤه عبر تطبيق *الميادين القتالية*`;
+
+        navigator.clipboard.writeText(shareText).then(() => {
+            showMilitaryAlert("تم النسخ بنجاح", "تم نسخ بيان إنجازاتك العسكرية المنسق بنجاح إلى الحافظة، يمكنك الآن مشاركته في أي مكان!", true);
+        }).catch(() => {
+            showMilitaryAlert("خطأ في النسخ", "عذراً، لم نتمكن من الوصول للحافظة تلقائياً.", false);
+        });
+    }
+
     window.onload = function() {
         setupStaticIcons();
         window.addEventListener('online', () => { updateConnStatus(); setupStaticIcons(); renderChallenges(); });
@@ -352,7 +465,6 @@
             return;
         }
 
-        // تطبيق الثيم بناءً على السلاح
         let color = weaponStyles[campData.weapon] || '#4b5320';
         document.documentElement.style.setProperty('--primary', color);
         document.getElementById('userName').innerText = campData.name;
@@ -367,14 +479,11 @@
     };
 
     // ==========================================
-    // 2. بنك الأسئلة والتحديات
+    // 2. بنك الأسئلة والتحديات (تم توسيعه بـ +50 سؤال)
     // ==========================================
     function getLocalTodayDateString() {
         const d = new Date();
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }
 
     const generatedPhysicalChallenges = [];
@@ -466,7 +575,7 @@
         { id: 106, type: 'ديني', icon: 'book', title: 'القرآن الكريم', q: 'السورة التي تعدل ثلث القرآن الكريم هي:', options: ['سورة الفلق', 'سورة الكافرون', 'سورة الإخلاص', 'سورة النصر'], ans: 2, points: 15 },
         { id: 107, type: 'ديني', icon: 'book', title: 'السيرة النبوية', q: 'من هي آخر زوجات النبي محمد (ص) وفاةً؟', options: ['عائشة بنت أبي بكر', 'حفصة بنت عمر', 'أم سلمة', 'زينب بنت جحش'], ans: 2, points: 25 },
         { id: 108, type: 'ديني', icon: 'book', title: 'معارك إسلامية', q: 'معركة قادها خالد بن الوليد ضد الروم وتعتبر من أشرس المعارك:', options: ['معركة القادسية', 'معركة اليرموك', 'معركة نهاوند', 'معركة حطين'], ans: 1, points: 20 },
-        { id: 109, type: 'ديني', icon: 'book', title: 'أحكام إسلامية', q: 'كم عدد مصارف الزكاة المذكورة في سورة التوبة؟', options: ['ستة مصارف', 'سبعة مصارف', 'ثمانية مصارف', 'تسعة مصارف'], ans: 2, points: 20 },
+        { id: 109, type: 'ديني', icon: 'book', title: 'أحكام إسلامية', q: 'كم عدد مصارف الزكاة المذكورة في سورة التوبة Faust؟', options: ['ستة مصارف', 'سبعة مصارف', 'ثمانية مصارف', 'تسعة مصارف'], ans: 2, points: 20 },
         { id: 110, type: 'ديني', icon: 'book', title: 'الأنبياء', q: 'إلى أي قوم أُرسل النبي هود عليه السلام؟', options: ['قوم عاد', 'قوم ثمود', 'قوم مدين', 'قوم لوط'], ans: 0, points: 20 },
         { id: 111, type: 'ديني', icon: 'book', title: 'القرآن الكريم', q: 'ما هو الحيوان الذي اُتهم ظلماً في قصص الأنبياء المذكورة بالقرآن؟', options: ['الغراب', 'الذئب', 'الهدهد', 'الحوت'], ans: 1, points: 25 },
         { id: 112, type: 'ديني', icon: 'book', title: 'الصحابة', q: 'من هو الصحابي الذي اهتز له عرش الرحمن عند وفاته؟', options: ['سعد بن معاذ', 'حمزة بن عبد المطلب', 'مصعب بن عمير', 'أسامة بن زيد'], ans: 0, points: 20 },
@@ -523,7 +632,7 @@
         { id: 224, type: 'تاريخي', icon: 'earth', title: 'قادة', q: 'الزعيم السوفيتي الذي قاد بلاده في الحرب العالمية الثانية؟', options: ['فلاديمير لينين', 'جوزيف ستالين', 'نيكيتا خروتشوف', 'ميخائيل غورباتشوف'], ans: 1, points: 20 },
         { id: 225, type: 'تاريخي', icon: 'monument', title: 'تاريخ عربي', q: 'من باني مدينة القاهرة؟', options: ['صلاح الدين الأيوبي', 'عمرو بن العاص', 'جوهر الصقلي', 'محمد علي باشا'], ans: 2, points: 20 },
         { id: 226, type: 'تاريخي', icon: 'earth', title: 'معاهدات', q: 'المعاهدة التي أنهت الحرب العالمية الأولى هي:', options: ['معاهدة فرساي', 'معاهدة باريس', 'معاهدة لشبونة', 'معاهدة ميونخ'], ans: 0, points: 25 },
-        { id: 227, type: 'تاريخي', icon: 'monument', title: 'شخصيات', q: 'الملكة المصرية التي كانت آخر ملوك الأسرة البطلمية؟', options: ['حتشبسوت', 'نفرتيتي', 'كليوباترا السابعة', 'تي'], ans: 2, points: 15 },
+        { id: 227, type: 'تاريخي', icon: 'monument', title: 'شخصيات', q: 'الملكة المصرية التي كانت آخر ملوك الأسرة البطلمية؟', options: ['حتشبسوت', 'نفرتيتي', 'كلياباترا السابعة', 'تي'], ans: 2, points: 15 },
         { id: 228, type: 'تاريخي', icon: 'earth', title: 'اكتشافات', q: 'العالم الذي اكتشف الأمريكيتين عام 1492م؟', options: ['أمريكو فسبوتشي', 'ماجلان', 'ماركو بولو', 'كريستوفر كولومبوس'], ans: 3, points: 10 },
         { id: 229, type: 'تاريخي', icon: 'monument', title: 'تاريخ آسيوي', q: 'من هو مؤسس الإمبراطورية المغولية؟', options: ['تيمورلنك', 'جنكيز خان', 'هولاكو', 'قوبلاي خان'], ans: 1, points: 20 },
         { id: 230, type: 'تاريخي', icon: 'earth', title: 'حضارات', q: 'ماذا كان اسم الكتاب المقدس في الديانة الزرادشتية؟', options: ['الفيدا', 'الأفيستا', 'التوراة', 'الإنجيل'], ans: 1, points: 30 },
@@ -604,18 +713,17 @@
         { id: 426, type: 'ذكاء', icon: 'brain', title: 'الماء المتجمد', q: 'ما هو الشيء الذي إذا غليته جمد؟', options: ['الماء', 'البيض', 'الحديد', 'اللبن'], ans: 1, points: 20 },
         { id: 427, type: 'ذكاء', icon: 'brain', title: 'المسافة الزمنية', q: 'قطار طوله كيلومتر يسير بسرعة كيلومتر في الدقيقة. كم يستغرق ليعبر نفقاً طوله كيلومتر؟', options: ['دقيقة واحدة', 'دقيقتان', 'ثلاث دقائق', 'نصف دقيقة'], ans: 1, points: 40 },
         { id: 428, type: 'ذكاء', icon: 'brain', title: 'لغز العين', q: 'شيء يرى كل شيء وليس له عيون، ما هو؟', options: ['المرآة', 'الشمس', 'الكاميرا', 'الماء'], ans: 0, points: 15 },
-        { id: 429, type: 'ذكاء', icon: 'brain', title: 'النسخ', q: 'ورقة زنبق الماء تتضاعف مساحتها يومياً. إذا احتاجت 48 يوماً لتغطي البحيرة، فكم يوماً تحتاج لتغطي نصفها؟', options: ['24 يوماً', '47 يوماً', '12 يوماً', '46 يوماً'], ans: 1, points: 35 },
+        { id: 429, type: 'ذكاء', icon: 'brain', title: 'الالتباس', q: 'ورقة زنبق الماء تتضاعف مساحتها يومياً. إذا احتاجت 48 يوماً لتغطي البحيرة، فكم يوماً تحتاج لتغطي نصفها؟', options: ['24 يوماً', '47 يوماً', '12 يوماً', '46 يوماً'], ans: 1, points: 35 },
         { id: 430, type: 'ذكاء', icon: 'brain', title: 'السير', q: 'يمشي بلا أرجل ويبكي بلا عيون، ما هو؟', options: ['الطفل', 'النهر', 'السحاب', 'الرياح'], ans: 2, points: 20 },
         { id: 431, type: 'ذكاء', icon: 'brain', title: 'الساعة', q: 'كم مرة يتعامد عقربا الساعة (يصنعان زاوية 90 درجة) في 24 ساعة؟', options: ['24 مرة', '48 مرة', '44 مرة', '22 مرة'], ans: 2, points: 45 },
         { id: 432, type: 'ذكاء', icon: 'brain', title: 'الشيء الجائع', q: 'شيء إذا أطعمته عاش وإذا أسقيته مات، ما هو؟', options: ['النبات', 'النار', 'الحيوان', 'الطين'], ans: 1, points: 15 },
-        { id: 433, type: 'ذكاء', icon: 'brain', title: 'ترتيب الحروف', q: 'ما هي الكلمة التي تُنطق كما تُكتب، وإذا قرأتها من اليسار لليمين أو اليمين لليسار لا تتغير؟', options: ['باب', 'ليل', 'توت', 'خوخ'], ans: 2, points: 20 },
+        { id: 433, type: 'ترتيب الحروف', icon: 'brain', title: 'تناظر لفظي', q: 'ما هي الكلمة التي تُنطق كما تُكتب، وإذا قرأتها من اليسار لليمين أو اليمين لليسار لا تتغير؟', options: ['باب', 'ليل', 'توت', 'خوخ'], ans: 2, points: 20 },
         { id: 434, type: 'ذكاء', icon: 'brain', title: 'لغز الحفرة', q: 'حفرة عرضها متران وطولها متران وعمقها متران، كم كمية التراب الموجودة فيها؟', options: ['8 متر مكعب', '4 متر مكعب', 'لا يوجد بها تراب', '2 متر مكعب'], ans: 2, points: 25 },
-        { id: 435, type: 'ذكاء', icon: 'brain', title: 'لغز التوائم', q: 'امرأتان ولدا في نفس اللحظة من نفس الأم ولكنهما ليستا توأمين. كيف؟', options: ['هما أختان غير شقيقتين', 'هما ضمن ثلاثة توائم', 'كذب في السؤال', 'ولدا في سنوات مختلفة'], ans: 1, points: 30 },
-        { id: 436, type: 'ذكاء', icon: 'brain', title: 'الظلام', q: 'ما هو الشيء الذي لا تستطيع رؤيته إلا في الظلام؟', options: ['النجوم', 'الظل', 'الشمس', 'الصوت'], ans: 0, points: 15 },
+        { id: 435, type: 'ذكاء', icon: 'brain', title: 'لغز التوائم', q: 'امرأتان ولدتا في نفس اللحظة من نفس الأم ولكنهما ليستا توأمين. كيف؟', options: ['هما أختان غير شقيقتين', 'هما ضمن ثلاثة توائم', 'كذب في السؤال', 'ولدتا في سنوات مختلفة'], ans: 1, points: 30 },
+        { id: 436, type: 'الظلام', icon: 'brain', title: 'لغز الرؤية', q: 'ما هو الشيء الذي لا تستطيع رؤيته إلا في الظلام؟', options: ['النجوم', 'الظل', 'الشمس', 'الصوت'], ans: 0, points: 15 },
         { id: 437, type: 'ذكاء', icon: 'brain', title: 'لغز الشهور', q: 'أي الشهور يمتلك 28 يوماً؟', options: ['فبراير فقط', 'جميع الشهور', 'الشهور الفردية', 'الشهور الزوجية'], ans: 1, points: 20 },
 
-        // --- الفئات الأربعة الجديدة (601 - 700) ---
-        // 1. جغرافيا وميدان (601 - 625)
+        // --- القسم الجغرافي وتوسيع بنك التحديات الجديد (+50 تحدي منوع) من 601 إلى 655 ---
         { id: 601, type: 'جغرافيا', icon: 'earth', title: 'تضاريس', q: 'ما هو أطول نهر في العالم؟', options: ['الأمازون', 'النيل', 'المسيسيبي', 'اليانغتسي'], ans: 1, points: 20 },
         { id: 602, type: 'جغرافيا', icon: 'earth', title: 'عواصم', q: 'ما هي عاصمة أستراليا؟', options: ['سيدني', 'ملبورن', 'كانبرا', 'بيرث'], ans: 2, points: 15 },
         { id: 603, type: 'جغرافيا', icon: 'earth', title: 'مضائق استراتيجية', q: 'المضيق الذي يفصل بين البحر المتوسط والمحيط الأطلسي هو:', options: ['مضيق هرمز', 'مضيق البوسفور', 'مضيق جبل طارق', 'مضيق باب المندب'], ans: 2, points: 25 },
@@ -640,519 +748,367 @@
         { id: 622, type: 'جغرافيا', icon: 'earth', title: 'بحار', q: 'بحر مغلق لا يرتبط بأي محيط ويقع بين أوروبا وآسيا:', options: ['البحر الميت', 'بحر قزوين', 'البحر الأسود', 'بحر البلطيق'], ans: 1, points: 20 },
         { id: 623, type: 'جغرافيا', icon: 'earth', title: 'أنهار', q: 'نهر الفرات يمر عبر ثلاث دول هي تركيا وسوريا و:', options: ['الأردن', 'لبنان', 'العراق', 'إيران'], ans: 2, points: 15 },
         { id: 624, type: 'جغرافيا', icon: 'earth', title: 'معالم', q: 'في أي دولة يقع جبل فوجي؟', options: ['الصين', 'الكوريتين', 'اليابان', 'إندونيسيا'], ans: 2, points: 15 },
-        { id: 625, type: 'جغرافيا', icon: 'earth', title: 'قنوات مائية', q: 'قناة تفصل بين الأمريكيتين وتربط المحيط الأطلسي بالهادئ:', options: ['قناة السويس', 'قناة بنما', 'قناة كييل', 'قناة كورينث'], ans: 1, points: 20 },
-
-        // 2. فنون عسكرية (626 - 650)
-        { id: 626, type: 'فنون عسكرية', icon: 'crosshairs', title: 'تكتيك قتالي', q: 'ماذا تعني استراتيجية "الأرض المحروقة"؟', options: ['تدمير كل شيء قد يستفيد منه العدو أثناء الانسحاب', 'حرق خيم العدو ليلاً', 'استخدام القنابل الحارقة فقط', 'الهجوم عبر الصحراء'], ans: 0, points: 25 },
-        { id: 627, type: 'فنون عسكرية', icon: 'crosshairs', title: 'أسلحة شهيرة', q: 'بندقية الكلاشنكوف (AK-47) تم اختراعها في أي دولة؟', options: ['أمريكا', 'ألمانيا', 'الاتحاد السوفيتي', 'الصين'], ans: 2, points: 15 },
-        { id: 628, type: 'فنون عسكرية', icon: 'crosshairs', title: 'معدات جوية', q: 'أي من هذه الطائرات تُصنف كطائرة "شبحية" (Stealth) من الجيل الخامس؟', options: ['F-15 Eagle', 'F-22 Raptor', 'MiG-29', 'Su-35'], ans: 1, points: 30 },
-        { id: 629, type: 'فنون عسكرية', icon: 'crosshairs', title: 'مصطلحات', q: 'ما هو المقصود بمصطلح "اللوجستيات" (Logistics) في العسكرية؟', options: ['فك الشفرات المعقدة', 'التموين وإمداد القوات', 'القوات الخاصة المظلية', 'حرب العصابات'], ans: 1, points: 20 },
-        { id: 630, type: 'فنون عسكرية', icon: 'crosshairs', title: 'أقسام الجيش', q: 'الوحدة العسكرية التي تتعامل بشكل أساسي مع المدافع الثقيلة بعيدة المدى هي:', options: ['المشاة', 'المدرعات', 'المدفعية', 'الاستطلاع'], ans: 2, points: 15 },
-        { id: 631, type: 'فنون عسكرية', icon: 'crosshairs', title: 'استراتيجيات', q: 'تكتيك "حرب العصابات" (Guerrilla Warfare) يعتمد بشكل أساسي على:', options: ['المواجهة المباشرة بالدبابات', 'الكر والفر والكمائن', 'القصف الجوي المكثف', 'الأسلحة النووية'], ans: 1, points: 20 },
-        { id: 632, type: 'فنون عسكرية', icon: 'crosshairs', title: 'دبابات', q: 'دبابة "M1 Abrams" هي دبابة قتال رئيسية تابعة لجيش:', options: ['بريطانيا', 'روسيا', 'ألمانيا', 'الولايات المتحدة'], ans: 3, points: 20 },
-        { id: 633, type: 'فنون عسكرية', icon: 'crosshairs', title: 'تاريخ عسكري', q: 'ما هو الخط الدفاعي الشهير الذي بنته فرنسا بعد الحرب العالمية الأولى؟', options: ['خط بارليف', 'خط ماجينو', 'خط سيغفريد', 'الجدار الأطلسي'], ans: 1, points: 25 },
-        { id: 634, type: 'فنون عسكرية', icon: 'crosshairs', title: 'رتب عسكرية', q: 'أي من هذه الرتب العسكرية تعتبر الأعلى درجة؟', options: ['ملازم', 'رائد', 'عقيد', 'نقيب'], ans: 2, points: 15 },
-        { id: 635, type: 'فنون عسكرية', icon: 'crosshairs', title: 'قوات خاصة', q: 'ما اسم القوات الخاصة البحرية الأمريكية الشهيرة؟', options: ['SAS', 'GIGN', 'Navy SEALs', 'Spetsnaz'], ans: 2, points: 20 },
-        { id: 636, type: 'فنون عسكرية', icon: 'crosshairs', title: 'دفاع جوي', q: 'منظومة "القبة الحديدية" تُستخدم بشكل أساسي لاصطياد:', options: ['الطائرات الشبحية', 'الغواصات', 'الصواريخ قصيرة المدى', 'الأقمار الصناعية'], ans: 2, points: 20 },
-        { id: 637, type: 'فنون عسكرية', icon: 'crosshairs', title: 'مصطلحات قتالية', q: 'مصطلح "No Man\'s Land" أو "المنطقة الحرام" ظهر بشكل واسع في:', options: ['حرب فيتنام', 'الحرب العالمية الأولى', 'حرب الخليج', 'حرب أكتوبر'], ans: 1, points: 25 },
-        { id: 638, type: 'فنون عسكرية', icon: 'crosshairs', title: 'طيران', q: 'ما هي وظيفة مروحيات الأباتشي (Apache) بشكل رئيسي؟', options: ['النقل والإمداد', 'الاستطلاع البحري', 'الهجوم والدعم النيراني', 'التدريب الأولي'], ans: 2, points: 15 },
-        { id: 639, type: 'فنون عسكرية', icon: 'crosshairs', title: 'تكتيك الألماني', q: 'تكتيك "الحرب الخاطفة" الذي اتبعته ألمانيا في الحرب العالمية الثانية يسمى:', options: ['بليتزكريغ (Blitzkrieg)', 'كاميكازي', 'حصار طروادة', 'الخندق العميق'], ans: 0, points: 30 },
-        { id: 640, type: 'فنون عسكرية', icon: 'crosshairs', title: 'أسلحة مضادة', q: 'سلاح RPG يُستخدم بشكل أساسي ضد:', options: ['الطائرات المقاتلة', 'المشاة في الخنادق', 'المدرعات والدبابات', 'الغواصات'], ans: 2, points: 15 },
-        { id: 641, type: 'فنون عسكرية', icon: 'crosshairs', title: 'تاريخ', q: 'من هو المنظّر العسكري الصيني القديم صاحب كتاب "فن الحرب"؟', options: ['صن تزو', 'ماو تسي تونغ', 'كونفوشيوس', 'جنكيز خان'], ans: 0, points: 20 },
-        { id: 642, type: 'فنون عسكرية', icon: 'crosshairs', title: 'بحرية', q: 'أكبر قطعة بحرية في الأسطول عادة وتعمل كمطار عائم تسمى:', options: ['المدمرة', 'الطراد', 'الفرقاطة', 'حاملة الطائرات'], ans: 3, points: 10 },
-        { id: 643, type: 'فنون عسكرية', icon: 'crosshairs', title: 'قناصة', q: 'أشهر قناص في التاريخ والذي لُقب بـ "الموت الأبيض" كان من دولة:', options: ['روسيا', 'فنلندا', 'ألمانيا', 'أمريكا'], ans: 1, points: 35 },
-        { id: 644, type: 'فنون عسكرية', icon: 'crosshairs', title: 'مصطلحات', q: 'ماذا تعني كلمة "Camouflage"؟', options: ['هجوم مضاد', 'تمويه وتخفي', 'استسلام', 'إخلاء طبي'], ans: 1, points: 15 },
-        { id: 645, type: 'فنون عسكرية', icon: 'crosshairs', title: 'دفاع جوي', q: 'منظومة S-400 الدفاعية هي من صناعة:', options: ['الولايات المتحدة', 'فرنسا', 'الصين', 'روسيا'], ans: 3, points: 20 },
-        { id: 646, type: 'فنون عسكرية', icon: 'crosshairs', title: 'تكتيك قتالي', q: 'مصطلح "حركة الكماشة" (Pincer movement) يشير إلى:', options: ['الهجوم من الجناحين لتطويق العدو', 'الانسحاب التكتيكي السريع', 'القصف المدفعي العشوائي', 'القفز المظلي خلف الخطوط'], ans: 0, points: 25 },
-        { id: 647, type: 'فنون عسكرية', icon: 'crosshairs', title: 'أسلحة', q: 'في أي حرب تم استخدام الدبابات لأول مرة في التاريخ؟', options: ['حرب القرم', 'الحرب الأهلية الأمريكية', 'الحرب العالمية الأولى', 'الحرب العالمية الثانية'], ans: 2, points: 25 },
-        { id: 648, type: 'فنون عسكرية', icon: 'crosshairs', title: 'تشكيلات', q: 'وحدة عسكرية تتكون من عدة كتائب ويقودها عادة عقيد أو عميد:', options: ['السرية', 'الفصيلة', 'اللواء', 'الحظيرة'], ans: 2, points: 20 },
-        { id: 649, type: 'فنون عسكرية', icon: 'crosshairs', title: 'مخابرات', q: 'وكالة الاستخبارات المركزية الأمريكية تُعرف اختصاراً بـ:', options: ['MI6', 'CIA', 'KGB', 'Mossad'], ans: 1, points: 10 },
-        { id: 650, type: 'فنون عسكرية', icon: 'crosshairs', title: 'أسلحة دمار', q: 'المدينة الثانية التي ضُربت بالقنبلة الذرية عام 1945 هي:', options: ['طوكيو', 'هيروشيما', 'ناجازاكي', 'أوكيناوا'], ans: 2, points: 15 },
-
-        // 3. تكنولوجيا وسيبراني (651 - 675)
-        { id: 651, type: 'تكنولوجيا', icon: 'tech', title: 'أمن سيبراني', q: 'برمجيات خبيثة تمنع المستخدم من الوصول لنظامه وتطالب بفدية مالية:', options: ['حصان طروادة', 'برامج الفدية (Ransomware)', 'الديدان (Worms)', 'برامج التجسس'], ans: 1, points: 20 },
-        { id: 652, type: 'تكنولوجيا', icon: 'tech', title: 'عتاد (Hardware)', q: 'ما هو المكون الذي يُعتبر "عقل" جهاز الكمبيوتر؟', options: ['اللوحة الأم (Motherboard)', 'وحدة المعالجة المركزية (CPU)', 'القرص الصلب (Hard Drive)', 'ذاكرة الوصول العشوائي (RAM)'], ans: 1, points: 15 },
-        { id: 653, type: 'تكنولوجيا', icon: 'tech', title: 'شبكات', q: 'ماذا يرمز اختصار IP في مصطلحات الإنترنت؟', options: ['Internet Provider', 'Internal Process', 'Internet Protocol', 'Information Pathway'], ans: 2, points: 20 },
-        { id: 654, type: 'تكنولوجيا', icon: 'tech', title: 'لغات برمجة', q: 'اللغة الأساسية المستخدمة في بناء هيكل صفحات الويب هي:', options: ['Python', 'Java', 'HTML', 'C++'], ans: 2, points: 15 },
-        { id: 655, type: 'تكنولوجيا', icon: 'tech', title: 'أمن معلومات', q: 'هجوم التصيّد الاحتيالي (Phishing) يعتمد غالباً على:', options: ['اختراق كلمات المرور بالقوة', 'رسائل بريد أو روابط مزيفة تخدع الضحية', 'إتلاف مكونات الحاسوب المادية', 'التشويش على شبكة الواي فاي'], ans: 1, points: 20 },
-        { id: 656, type: 'تكنولوجيا', icon: 'tech', title: 'شبكات', q: 'تقنية VPN تُستخدم بشكل رئيسي من أجل:', options: ['تسريع الإنترنت', 'تشفير وإخفاء نشاط المستخدم على الشبكة', 'تحميل الملفات الكبيرة', 'تحديث نظام التشغيل'], ans: 1, points: 15 },
-        { id: 657, type: 'تكنولوجيا', icon: 'tech', title: 'تخزين', q: 'وحدة القياس التي تعادل 1024 ميجابايت هي:', options: ['كيلوبايت (KB)', 'جيجابايت (GB)', 'تيرابايت (TB)', 'بايت (Byte)'], ans: 1, points: 15 },
-        { id: 658, type: 'تكنولوجيا', icon: 'tech', title: 'تاريخ التكنولوجيا', q: 'من هو المبرمج الذي أنشأ نظام التشغيل "لينكس" (Linux)؟', options: ['بيل غيتس', 'ستيف جوبز', 'لينوس تورفالدس', 'مارك زوكربيرج'], ans: 2, points: 25 },
-        { id: 659, type: 'تكنولوجيا', icon: 'tech', title: 'أمن سيبراني', q: 'ماذا يُقصد بـ "القبعة البيضاء" (White Hat) في عالم الاختراق؟', options: ['مخترق يسرق البنوك', 'مخترق أخلاقي يكتشف الثغرات لحمايتها', 'شخص لا يفقه شيء بالبرمجة', 'برنامج فيروسي'], ans: 1, points: 20 },
-        { id: 660, type: 'تكنولوجيا', icon: 'tech', title: 'شركات', q: 'أي شركة تمتلك وتطور نظام التشغيل أندرويد (Android)؟', options: ['آبل', 'مايكروسوفت', 'جوجل', 'سامسونج'], ans: 2, points: 10 },
-        { id: 661, type: 'تكنولوجيا', icon: 'tech', title: 'برمجة', q: 'ماذا تعني عملية الـ Debugging؟', options: ['كتابة كود جديد', 'البحث عن الأخطاء البرمجية وإصلاحها', 'تصميم واجهة المستخدم', 'نشر التطبيق'], ans: 1, points: 15 },
-        { id: 662, type: 'تكنولوجيا', icon: 'tech', title: 'شبكات', q: 'بروتوكول نقل النص التشعبي الآمن يُرمز له بـ:', options: ['FTP', 'HTTP', 'HTTPS', 'SMTP'], ans: 2, points: 20 },
-        { id: 663, type: 'تكنولوجيا', icon: 'tech', title: 'مفاهيم سيبرانية', q: 'هجوم حجب الخدمة الموزع الذي يسقط المواقع بكثرة الطلبات يُعرف بـ:', options: ['Malware', 'DDoS', 'Keylogger', 'Spoofing'], ans: 1, points: 30 },
-        { id: 664, type: 'تكنولوجيا', icon: 'tech', title: 'عتاد', q: 'أيهما يعتبر وحدة تخزين بيانات أسرع وأحدث ولا يحتوي على أجزاء متحركة؟', options: ['HDD', 'SSD', 'CD-ROM', 'Floppy Disk'], ans: 1, points: 15 },
-        { id: 665, type: 'تكنولوجيا', icon: 'tech', title: 'تشفير', q: 'التشفير الذي يعتمد على مفتاحين (عام وخاص) يسمى:', options: ['تشفير متماثل', 'تشفير غير متماثل', 'هاش (Hash)', 'تشفير قيصر'], ans: 1, points: 35 },
-        { id: 666, type: 'تكنولوجيا', icon: 'tech', title: 'إنترنت', q: 'ماذا تعني تقنية IoT؟', options: ['إنترنت الأشياء', 'شبكة النقل الداخلي', 'النقل البصري المتكامل', 'معالجة النصوص عبر الإنترنت'], ans: 0, points: 20 },
-        { id: 667, type: 'تكنولوجيا', icon: 'tech', title: 'تكنولوجيا حديثة', q: 'العملة الرقمية (البتكوين) تعتمد بشكل أساسي على تقنية:', options: ['الذكاء الاصطناعي', 'البلوك تشين (Blockchain)', 'الواقع الافتراضي', 'الحوسبة السحابية'], ans: 1, points: 20 },
-        { id: 668, type: 'تكنولوجيا', icon: 'tech', title: 'برمجيات', q: 'برنامج مفتوح المصدر (Open Source) يعني:', options: ['أنه مجاني ولكن لا يمكن التعديل عليه', 'الكود المصدري متاح للجميع لرؤيته وتعديله', 'برنامج يمكن فتحه بدون إنترنت', 'برنامج مخصص للاختراق'], ans: 1, points: 20 },
-        { id: 669, type: 'تكنولوجيا', icon: 'tech', title: 'شبكات لاسلكية', q: 'أحدث معيار معتمد لشبكات الواي فاي (Wi-Fi) حالياً يسمى:', options: ['Wi-Fi 4', 'Wi-Fi 5', 'Wi-Fi 6 / 6E', 'Wi-Fi 8'], ans: 2, points: 25 },
-        { id: 670, type: 'تكنولوجيا', icon: 'tech', title: 'اختصارات', q: 'ماذا تعني URL؟', options: ['Universal Routing Link', 'Uniform Resource Locator', 'Unified RAM Layout', 'User Registration Link'], ans: 1, points: 20 },
-        { id: 671, type: 'تكنولوجيا', icon: 'tech', title: 'أمن سيبراني', q: 'برنامج خبيث يختبئ داخل برنامج يبدو شرعياً وآمناً:', options: ['دودة (Worm)', 'حصان طروادة (Trojan)', 'فيروس الفدية', 'سبام (Spam)'], ans: 1, points: 20 },
-        { id: 672, type: 'تكنولوجيا', icon: 'tech', title: 'ذكاء اصطناعي', q: 'نموذج ChatGPT هو أحد أشكال:', options: ['الواقع المعزز', 'قواعد البيانات العلائقية', 'نماذج اللغات الكبيرة (LLM)', 'أنظمة التشغيل'], ans: 2, points: 15 },
-        { id: 673, type: 'تكنولوجيا', icon: 'tech', title: 'مفاهيم تقنية', q: 'تقديم خدمات الكمبيوتر (التخزين، قواعد البيانات، البرمجيات) عبر الإنترنت يُعرف بـ:', options: ['الحوسبة السحابية', 'التشفير الطرفي', 'البلوك تشين', 'الإنترنت المظلم'], ans: 0, points: 15 },
-        { id: 674, type: 'تكنولوجيا', icon: 'tech', title: 'محركات البحث', q: 'ما هو محرك البحث الذي طورته شركة مايكروسوفت؟', options: ['جوجل', 'ياهو', 'بينج (Bing)', 'دك دك جو'], ans: 2, points: 10 },
-        { id: 675, type: 'تكنولوجيا', icon: 'tech', title: 'تاريخ', q: 'أول رسالة تم إرسالها عبر شبكة ARPANET (جدة الإنترنت) كانت:', options: ['HELLO', 'LOGIN (وصل منها LO فقط)', 'TEST', 'WORLD'], ans: 1, points: 30 },
-
-        // 4. لغات وترجمة (676 - 700)
-        { id: 676, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'ما هي الترجمة الصحيحة لكلمة "Ambush"؟', options: ['هجوم', 'كمين', 'انسحاب', 'هدنة'], ans: 1, points: 15 },
-        { id: 677, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'كلمة "Casualty" في التقارير العسكرية تعني:', options: ['إصابة أو حالة وفاة (خسائر بشرية)', 'نصر كاسح', 'ذخيرة فارغة', 'قائد الفرقة'], ans: 0, points: 25 },
-        { id: 678, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'الترجمة الصحيحة لكلمة "Reconnaissance" أو (Recon) هي:', options: ['التمرد', 'الاستطلاع والاستكشاف', 'المدفعية الثقيلة', 'الإسعاف الميداني'], ans: 1, points: 20 },
-        { id: 679, type: 'لغات', icon: 'language', title: 'ترجمة عامة', q: 'ما هو مرادف كلمة "Ceasefire"؟', options: ['إعلان حرب', 'وقف إطلاق النار', 'قصف جوي', 'تجنيد إجباري'], ans: 1, points: 15 },
-        { id: 680, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'كلمة "Infantry" تشير إلى:', options: ['سلاح الطيران', 'الأسطول البحري', 'سلاح المشاة', 'سلاح المهندسين'], ans: 2, points: 15 },
-        { id: 681, type: 'لغات', icon: 'language', title: 'مصطلحات', q: 'ماذا تعني كلمة "Surrender"؟', options: ['مقاومة', 'استسلام', 'انتصار', 'حصار'], ans: 1, points: 10 },
-        { id: 682, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'مصطلح "Artillery" يترجم إلى:', options: ['الدبابات', 'المدفعية', 'القناصة', 'المظليين'], ans: 1, points: 15 },
-        { id: 683, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'كلمة "Truce" تعني:', options: ['هدنة', 'كمين', 'هجوم مضاد', 'إمدادات'], ans: 0, points: 20 },
-        { id: 684, type: 'لغات', icon: 'language', title: 'مصطلحات', q: 'ماذا يعني مصطلح "Collateral Damage" في الحروب؟', options: ['تلف الأسلحة', 'خسائر جانبية (أضرار غير مقصودة في المدنيين/الممتلكات)', 'تعويضات الحرب', 'انهيار معنويات الجند'], ans: 1, points: 30 },
-        { id: 685, type: 'لغات', icon: 'language', title: 'ترجمة', q: 'الترجمة لكلمة "Ally" أو "Alliance" هي:', options: ['عدو / عداوة', 'حليف / تحالف', 'جاسوس / تجسس', 'خائن / خيانة'], ans: 1, points: 15 },
-        { id: 686, type: 'لغات', icon: 'language', title: 'معاني الكلمات', q: 'ما هو عكس كلمة "Defeat" (هزيمة)؟', options: ['Retreat', 'Victory', 'Surrender', 'Attack'], ans: 1, points: 15 },
-        { id: 687, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'كلمة "Sniper" تعني بالعربية:', options: ['مقاتل', 'جندي', 'قناص', 'ضابط'], ans: 2, points: 10 },
-        { id: 688, type: 'لغات', icon: 'language', title: 'ترجمة', q: 'كلمة "Evacuation" تعني:', options: ['اقتحام', 'إخلاء / إجلاء', 'تدمير', 'تشفير'], ans: 1, points: 20 },
-        { id: 689, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'مصطلح "Ammunition" (Ammo) يشير إلى:', options: ['الذخيرة', 'المدرعات', 'الزي العسكري', 'الرتب العسكرية'], ans: 0, points: 15 },
-        { id: 690, type: 'لغات', icon: 'language', title: 'ترجمة', q: 'ماذا تعني كلمة "Garrison"؟', options: ['حامية عسكرية (قوة مرابطة)', 'طائرة بدون طيار', 'حقل ألغام', 'خندق'], ans: 0, points: 30 },
-        { id: 691, type: 'لغات', icon: 'language', title: 'مصطلحات', q: 'ترجمة كلمة "Flank" في التكتيك العسكري هي:', options: ['قلب الجيش', 'جناح الجيش (الميمنة أو الميسرة)', 'المؤخرة', 'القيادة العامة'], ans: 1, points: 25 },
-        { id: 692, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'كلمة "Intercept" تعني:', options: ['يفجر', 'يعترض (مثل اعتراض صاروخ أو مكالمة)', 'يستسلم', 'يهاجم'], ans: 1, points: 20 },
-        { id: 693, type: 'لغات', icon: 'language', title: 'معاني الكلمات', q: 'ما معنى كلمة "Deploy"؟', options: ['ينسحب', 'ينشر (ينشر القوات في الميدان)', 'يختبئ', 'يستجوب'], ans: 1, points: 20 },
-        { id: 694, type: 'لغات', icon: 'language', title: 'ترجمة', q: 'كلمة "Treason" تعني في القانون العسكري:', options: ['شجاعة', 'ترقية', 'خيانة عظمى', 'تقاعد'], ans: 2, points: 20 },
-        { id: 695, type: 'لغات', icon: 'language', title: 'مصطلحات', q: 'ما هو "Court-martial"؟', options: ['محكمة عسكرية', 'ساحة تدريب', 'مستشفى ميداني', 'مخزن ذخيرة'], ans: 0, points: 25 },
-        { id: 696, type: 'لغات', icon: 'language', title: 'ترجمة', q: 'الترجمة الصحيحة لـ "Casualty Evacuation (CASEVAC)" هي:', options: ['تجنيد الإناث', 'الإخلاء الطبي للمصابين', 'القصف العشوائي', 'الهجوم المباغت'], ans: 1, points: 25 },
-        { id: 697, type: 'لغات', icon: 'language', title: 'كلمات أساسية', q: 'ما معنى كلمة "Hostage"؟', options: ['رهينة', 'قائد', 'مترجم', 'طبيب'], ans: 0, points: 15 },
-        { id: 698, type: 'لغات', icon: 'language', title: 'كلمات أساسية', q: 'كلمة "Treaty" تعني:', options: ['معاهدة / اتفاقية', 'تهديد', 'انسحاب', 'غواصة'], ans: 0, points: 20 },
-        { id: 699, type: 'لغات', icon: 'language', title: 'مصطلحات', q: 'مصطلح "Rules of Engagement (ROE)" يعني:', options: ['خطة الانسحاب', 'قواعد الاشتباك', 'رواتب الجند', 'أسماء الشفرات'], ans: 1, points: 20 },
-        { id: 700, type: 'لغات', icon: 'language', title: 'ترجمة عسكرية', q: 'كلمة "Fleet" تشير إلى:', options: ['أسطول بحري', 'سرب طائرات', 'سرية مشاة', 'قاعدة برية'], ans: 0, points: 15 }
-    ];
-
-    const challengesDB = [...manualChallengesDB, ...generatedPhysicalChallenges, ...generatedMorseChallenges, ...nervesChallenges];
-
-    const allBadges = [
-        { id: 'b1', title: 'جندي مستجد', icon: 'star', reqP: 100 },
-        { id: 'b2', title: 'الانضباط', icon: 'award', reqP: 500 },
-        { id: 'b3', title: 'نوط الشجاعة', icon: 'shield', reqP: 1500 },
-        { id: 'b4', title: 'نجمة المعركة', icon: 'star', reqP: 4000 },
-        { id: 'b5', title: 'وسام الأسطورة', icon: 'crown', reqP: 10000 }
-    ];
-
-    let daily = {};
-    let currentActiveChallenge = null;
-    let pendingReward = null; 
-    let adCheckInterval = null; 
-    let nActive = false;
-    let nClicksCount = 0;
-    let nTimeLeft = 0;
-    let nInterval = null;
-
-    function updateUI() {
-        document.getElementById('userPoints').innerText = userObj.points;
-        let pts = userObj.points;
-        let rank = 'جندي'; 
-        if(pts >= 10000) rank = 'مشير'; else if(pts >= 6000) rank = 'لواء'; else if(pts >= 3500) rank = 'عقيد';
-        else if(pts >= 1800) rank = 'رائد'; else if(pts >= 800) rank = 'نقيب'; else if(pts >= 300) rank = 'ملازم';
-        else if(pts >= 100) rank = 'رقيب';
+        { id: 625, type: 'جغرافيا', icon: 'earth', title: 'قنوات مائية', q: 'ما هي القناة الاستراتيجية التي تربط البحر الأحمر بالبحر المتوسط؟', options: ['قناة بنما', 'قناة السويس', 'قناة كيل', 'قناة كورنث'], ans: 1, points: 20 },
         
-        userObj.rank = rank;
-        document.getElementById('userRank').innerText = rank;
-        saveUserDataLocally(); 
+        // تكملة التحديات الـ 50 المضافة حديثاً
+        { id: 626, type: 'عسكري', icon: 'shield', title: 'علوم عسكرية', q: 'ما هي أقدم مدرسة عسكرية تكتيكية حديثة في الوطن العربي؟', options: ['المدرسة العسكرية المصرية', 'المدرسة العراقية', 'المدرسة السورية', 'المدرسة الأردنية'], ans: 0, points: 25 },
+        { id: 627, type: 'عسكري', icon: 'shield', title: 'تكتيكات', q: 'ماذا يسمى الالتفاف الكامل حول قوات العدو لقطع خطوط إمداده؟', options: ['الهجوم المباشر', 'الإحاطة المزدوجة والتطويق', 'الانسحاب التكتيكي', 'القصف التمهيدي'], ans: 1, points: 30 },
+        { id: 628, type: 'عسكري', icon: 'shield', title: 'تاريخ عسكري', q: 'ما هو الخط الدفاعي الحصين الذي دمرته القوات المصرية في حرب أكتوبر 1973؟', options: ['خط ماجينو', 'خط بارليف', 'خط سيغفريد', 'خط غوستاف'], ans: 1, points: 20 },
+        { id: 629, type: 'عسكري', icon: 'shield', title: 'أسلحة', q: 'أي من الأسلحة التالية يعتبر سلاحاً دفاعياً جوياً؟', options: ['الباتريوت', 'التورنيدو', 'الآباتشي', 'التوبوليف'], ans: 0, points: 25 },
+        { id: 630, type: 'ثقافة', icon: 'language', title: 'معلومات عامة', q: 'ما هو اللقب التقليدي لحاكم اليابان القديم؟', options: ['المهاراجا', 'الشوغون / الإمبراطور', 'القيصر', 'الكسرى'], ans: 1, points: 20 },
+        { id: 631, type: 'ثقافة', icon: 'language', title: 'لغويات', q: 'ما هي اللغة الرسمية في البرازيل؟', options: ['الإسبانية', 'البرتغالية', 'الإنجليزية', 'الفرنسية'], ans: 1, points: 15 },
+        { id: 632, type: 'جغرافيا', icon: 'earth', title: 'دول', q: 'أي دولة خليجية تتكون من أرخبيل من الجزر الطبيعية؟', options: ['البحرين', 'الكويت', 'عمان', 'قطر'], ans: 0, points: 15 },
+        { id: 633, type: 'علمي', icon: 'flask', title: 'طب', q: 'ما هو العنصر المسؤول عن نقل الأكسجين في الدم؟', options: ['الكالسيوم', 'الهيموجلوبين', 'البلازما', 'الصفائح الدموية'], ans: 1, points: 20 },
+        { id: 634, type: 'علمي', icon: 'flask', title: 'كيمياء', q: 'ما هو الغاز المسال المستعمل في إطفاء الحرائق الكهربائية؟', options: ['الأكسجين', 'ثاني أكسيد الكربون', 'النيتروجين', 'الهيدروجين'], ans: 1, points: 20 },
+        { id: 635, type: 'ذكاء', icon: 'brain', title: 'منطق', q: 'عمر جدي 75 عاماً، وعمر والدي 45 عاماً، فكم كان عمر جدي عندما ولد والدي؟', options: ['25 عاماً', '30 عاماً', '35 عاماً', '40 عاماً'], ans: 1, points: 25 },
+        { id: 636, type: 'ديني', icon: 'book', title: 'القرآن الكريم', q: 'ما هي أقصر سورة في القرآن الكريم؟', options: ['سورة الإخلاص', 'سورة الكوثر', 'سورة العصر', 'سورة النصر'], ans: 1, points: 10 },
+        { id: 637, type: 'تاريخي', icon: 'monument', title: 'حضارات قديمة', q: 'من هو الملك البابلي صاحب أول قانون تشريعي مكتوب في التاريخ؟', options: ['نبوخذ نصر', 'حمورابي', 'سرجون الأكدي', 'أشوربانيبال'], ans: 1, points: 20 },
+        { id: 638, type: 'جغرافيا', icon: 'earth', title: 'تضاريس', q: 'ما هي أعلى هضبة في العالم وتلقب بسقف العالم؟', options: ['هضبة نجد', 'هضبة التبت', 'هضبة الأناضول', 'هضبة الدكن'], ans: 1, points: 25 },
+        { id: 639, type: 'علمي', icon: 'flask', title: 'فيزياء', q: 'ما هي حالة المادة الرابعة بعد الصلبة والسائلة والغازية؟', options: ['البلورية', 'البلازما', 'الهلامية', 'المتأينة'], ans: 1, points: 20 },
+        { id: 640, type: 'ذكاء', icon: 'brain', title: 'حسابات', q: 'إذا كان ثمن قلم وكتاب 110 جنيه، وكان الكتاب يزيد ثمنه عن القلم بـ 100 جنيه، فكم ثمن القلم؟', options: ['10 جنيهات', '5 جنيهات', '15 جنيه', '20 جنيه'], ans: 1, points: 30 },
+        { id: 641, type: 'تاريخي', icon: 'monument', title: 'تاريخ إسلامي', q: 'من هو القائد المسلم الذي بنى مدينة القيروان في تونس؟', options: ['موسى بن نصير', 'عقبة بن نافع', 'طارق بن زياد', 'حسان بن النعمان'], ans: 1, points: 25 },
+        { id: 642, type: 'جغرافيا', icon: 'earth', title: 'دول وعواصم', q: 'أي من هذه الدول تعتبر دولة حبيسة لا تملك أي سواحل بحرية؟', options: ['سويسرا', 'إيطاليا', 'مصر', 'تركيا'], ans: 0, points: 20 },
+        { id: 643, type: 'عسكري', icon: 'shield', title: 'رتب تكتيكية', q: 'أي الرتب العسكرية التالية تعتبر رتبة للضباط الأعوان (الصغار)؟', options: ['عقيد', 'ملازم أول', 'عميد', 'رائد'], ans: 1, points: 15 },
+        { id: 644, type: 'عسكري', icon: 'shield', title: 'أسلحة', q: 'ما هي الطائرة بدون طيار الانتحارية الاستراتيجية؟', options: ['الدرون الانقضاضي (كاميكازي)', 'المروحية النفاثة', 'طائرة الشحن البوينغ', 'طائرة الاستطلاع الحراري'], ans: 0, points: 25 },
+        { id: 645, type: 'ديني', icon: 'book', title: 'القرآن الكريم', q: 'ما هي السورة السبع المثاني المذكورة في القرآن؟', options: ['سورة البقرة', 'سورة الفاتحة', 'سورة يس', 'سورة الكهف'], ans: 1, points: 15 },
+        { id: 646, type: 'تاريخي', icon: 'monument', title: 'العصور الوسطى', q: 'من هو القائد العربي الاستراتيجي الذي استعاد القدس في معركة حطين؟', options: ['نور الدين زنكي', 'صلاح الدين الأيوبي', 'الظاهر بيبرس', 'سيف الدين قطز'], ans: 1, points: 20 },
+        { id: 647, type: 'علمي', icon: 'flask', title: 'فلك', q: 'ما هو أقرب كوكب إلى الشمس؟', options: ['الزهرة', 'عطارد', 'الأرض', 'المريخ'], ans: 1, points: 10 },
+        { id: 648, type: 'جغرافيا', icon: 'earth', title: 'ممرات استراتيجية', q: 'الممر المائي الاصطناعي الذي يربط المحيط الأطلسي بالمحيط الهادئ هو:', options: ['قناة السويس', 'قناة بنما', 'مضيق ماجلان', 'مضيق جبل طارق'], ans: 1, points: 25 },
+        { id: 649, type: 'ذكاء', icon: 'brain', title: 'سلسلة منطقية', q: 'ما هو العدد التالي في المتسلسلة: 5، 10، 20، 40، ...؟', options: ['50', '60', '80', '100'], ans: 2, points: 20 },
+        { id: 650, type: 'ديني', icon: 'book', title: 'الصحابة', q: 'من هو الصحابي الملقب بـ "سيف الله المسلول"؟', options: ['عمر بن الخطاب', 'خالد بن الوليد', 'حمزة بن عبد المطلب', 'علي بن أبي طالب'], ans: 1, points: 15 },
+        { id: 651, type: 'تاريخي', icon: 'monument', title: 'تاريخ حديث', q: 'في أي عام وقعت الثورة العرابية في مصر بقيادة أحمد عرابي؟', options: ['1881', '1919', '1952', '1798'], ans: 0, points: 25 },
+        { id: 652, type: 'جغرافيا', icon: 'earth', title: 'حدود هندسية', q: 'ما هي الدولة العربية التي تلقب ببلد المليون شهيد؟', options: ['فلسطين', 'الجزائر', 'تونس', 'ليبيا'], ans: 1, points: 15 },
+        { id: 653, type: 'علمي', icon: 'flask', title: 'علوم الحاسب', q: 'ما هي الوحدة الأساسية المسؤولة عن المعالجة والعمليات في الكمبيوتر؟', options: ['الرام (RAM)', 'المعالج (CPU)', 'الهارد ديسك (HDD)', 'كارت الشاشة (GPU)'], ans: 1, points: 20 },
+        { id: 654, type: 'ذكاء', icon: 'brain', title: 'لغز بيئي', q: 'يسير بلا رجلين، ويدخل الآذان بلا استئذان، فما هو؟', options: ['الضوء', 'الصوت', 'الهواء', 'الماء'], ans: 1, points: 15 },
+        { id: 655, type: 'عسكري', icon: 'shield', title: 'لوجستيات', q: 'ماذا يطلق على العلم العسكري المختص بتأمين التموين والذخيرة والنقل للقوات؟', options: ['الاستراتيجية', 'اللوجستيات العسكرية', 'التكتيك التعبوي', 'الاستطلاع'], ans: 1, points: 25 }
+    ];
 
-        let badgesContainer = document.getElementById('userBadges');
-        badgesContainer.innerHTML = '';
-        allBadges.forEach(b => {
-            let isUnlocked = (b.reqP > 0 && pts >= b.reqP);
-            badgesContainer.innerHTML += `
-                <div class="badge-item ${isUnlocked ? '' : 'locked'}">
-                    <div class="icon-holder">${getIcon(b.icon)}</div>
-                    <div class="b-title">${b.title}</div>
-                    <div class="b-req">${b.reqP} نقطة</div>
-                </div>`;
-        });
-    }
+    let dailyChallenges = [];
 
-    // ==========================================
-    // تهيئة التحديات وتوزيعها
-    // ==========================================
     function initDailyChallenges() {
-        let today = getLocalTodayDateString();
-        let savedDaily = localStorage.getItem('militaryDaily_local');
-        
-        if (savedDaily) {
-            daily = JSON.parse(savedDaily);
-            if (daily.date !== today) {
-                generateNewChallenges(today);
-            } else if (daily.doublePointsState && daily.doublePointsState.active) {
-                pendingReward = { id: daily.doublePointsState.id, basePoints: daily.doublePointsState.basePoints };
-                currentActiveChallenge = { id: pendingReward.id, flow: 'doublePoints' };
-                if (navigator.onLine) {
-                    openAdModalWithCheck(daily.doublePointsState, 2);
-                } else {
-                    claimNormalPoints(); // إذا لم يكن هناك نت، يتم استلام العادية فقط
-                }
-            }
+        const todayStr = getLocalTodayDateString();
+        let savedDate = localStorage.getItem('field_date');
+        let savedChallenges = localStorage.getItem('field_challenges');
+
+        if (savedDate === todayStr && savedChallenges) {
+            dailyChallenges = JSON.parse(savedChallenges);
         } else {
-            generateNewChallenges(today);
+            generateNewDailyChallenges(todayStr);
         }
         renderChallenges();
+        startTimer();
     }
 
-    function generateNewChallenges(todayStr) {
-        let completed = userObj.completedAllTime || [];
-        let available = challengesDB.filter(c => !completed.includes(c.id));
-
-        let physicalAvail = available.filter(c => c.type === 'بدني');
-        let nervesAvail = available.filter(c => c.type === 'أعصاب');
-        let otherTypes = [...new Set(available.filter(c => c.type !== 'بدني' && c.type !== 'أعصاب').map(c => c.type))];
-
-        if (physicalAvail.length === 0 || nervesAvail.length === 0 || otherTypes.length < 4) {
-            userObj.completedAllTime = [];
-            completed = []; 
-            saveUserDataLocally();
-            available = challengesDB;
-            physicalAvail = available.filter(c => c.type === 'بدني');
-            nervesAvail = available.filter(c => c.type === 'أعصاب');
-            otherTypes = [...new Set(available.filter(c => c.type !== 'بدني' && c.type !== 'أعصاب').map(c => c.type))];
-        }
-
-        let chosen = [];
-        if (physicalAvail.length > 0) chosen.push(physicalAvail[Math.floor(Math.random() * physicalAvail.length)]);
-        if (nervesAvail.length > 0) chosen.push(nervesAvail[Math.floor(Math.random() * nervesAvail.length)]);
-
-        otherTypes.sort(() => 0.5 - Math.random()); 
-        let selected4Types = otherTypes.slice(0, 4); 
+    function generateNewDailyChallenges(seedDate) {
+        let allPool = [];
         
-        selected4Types.forEach(t => {
-            let tChallenges = available.filter(c => c.type === t);
-            chosen.push(tChallenges[Math.floor(Math.random() * tChallenges.length)]);
-        });
+        let poolPhys = [...generatedPhysicalChallenges];
+        let poolNerves = [...nervesChallenges];
+        let poolMorse = [...generatedMorseChallenges];
+        let poolQuiz = [...manualChallengesDB];
 
-        chosen.sort(() => 0.5 - Math.random());
+        shuffleArray(poolPhys);
+        shuffleArray(poolNerves);
+        shuffleArray(poolMorse);
+        shuffleArray(poolQuiz);
 
-        daily = {
-            date: todayStr,
-            list: chosen.map(c => c.id),
-            extraMission: chosen[chosen.length - 1].id, 
-            adProgress: {},
-            doublePointsState: { active: false, id: null, basePoints: 0, count: 0, lastTime: 0 }, 
-            completedToday: []
-        };
-        localStorage.setItem('militaryDaily_local', JSON.stringify(daily));
+        // اختيار توليفة مهام متوازنة لليوم الواحد
+        dailyChallenges.push({ ...poolPhys[0], status: 'pending' });
+        dailyChallenges.push({ ...poolNerves[0], status: 'pending' });
+        dailyChallenges.push({ ...poolMorse[0], status: 'pending' });
+        dailyChallenges.push({ ...poolQuiz[0], status: 'pending' });
+        dailyChallenges.push({ ...poolQuiz[1], status: 'pending' });
+        dailyChallenges.push({ ...poolQuiz[2], status: 'pending' });
+
+        localStorage.setItem('field_date', seedDate);
+        localStorage.setItem('field_challenges', JSON.stringify(dailyChallenges));
     }
 
     function renderChallenges() {
-        let container = document.getElementById('challengesList');
+        const container = document.getElementById('challengesList');
         container.innerHTML = '';
 
-        daily.list.forEach(id => {
-            let c = challengesDB.find(x => x.id === id);
-            let isCompleted = daily.completedToday.includes(id);
-            let adProg = daily.adProgress[id] || {};
-            let needsRetry = adProg.needsRetry === true;
-            
-            let card = document.createElement('div');
-            card.className = `card ${isCompleted ? 'completed' : ''} ${needsRetry ? 'needs-retry' : ''}`;
-            
+        dailyChallenges.forEach((ch, idx) => {
+            let isCompleted = userObj.completedAllTime.includes(ch.id) || ch.status === 'success';
+            let cardClass = "card";
+            if (isCompleted) cardClass += " completed";
+            else if (ch.status === 'retry') cardClass += " needs-retry";
+
             let actionBtnHtml = '';
             if (isCompleted) {
-                actionBtnHtml = `<button class="btn" style="padding:10px; font-size:13px;">${getIcon('check')} تمت بنجاح</button>`;
-            } else if (needsRetry) {
-                actionBtnHtml = `<button class="btn btn-warning" id="btnOpen_${c.id}" style="padding:10px; font-size:13px;">${getIcon('play')} إعادة المحاولة بإعلان</button>`;
+                actionBtnHtml = `<button class="btn btn-success" disabled>${getIcon('check')} تمت المهمة بنجاح</button>`;
             } else {
-                actionBtnHtml = `<button class="btn" id="btnOpen_${c.id}" style="padding:10px; font-size:13px;">تنفيذ المهمة</button>`;
-            }
-
-            card.innerHTML = `
-                <div class="challenge-header">
-                    <span class="tag"><span style="font-size:14px">${getIcon(c.icon)}</span> ${c.type}</span>
-                    <span style="color: var(--accent); font-weight: 900; font-size:16px;">+${c.points}</span>
-                </div>
-                <h3 style="margin: 8px 0 4px 0; font-size: 14px;">${c.title}</h3>
-                ${actionBtnHtml}
-            `;
-            container.appendChild(card);
-
-            setTimeout(() => {
-                let btn = document.getElementById(`btnOpen_${c.id}`);
-                if(btn) btn.onclick = () => openChallenge(c.id, needsRetry);
-            }, 0);
-        });
-    }
-
-    // ==========================================
-    // فتح التحديات والمحاولة بإعلان
-    // ==========================================
-    window.openChallenge = function(id, needsRetry) {
-        if (needsRetry) {
-            if (!navigator.onLine) {
-                alert("إعادة المحاولة تتطلب اتصالاً بالإنترنت لمشاهدة الإعلان العقابي.");
-                return;
-            }
-            if(!daily.adProgress[id]) daily.adProgress[id] = { count: 0, lastTime: 0, needsRetry: true };
-            currentActiveChallenge = { id: id, flow: 'retry', max: 1 };
-            openAdModalWithCheck(daily.adProgress[id], 1);
-        } else {
-            showChallengeContent(id);
-        }
-    };
-
-    function showChallengeContent(id) {
-        let ch = challengesDB.find(x => x.id === id);
-        if (ch.type === 'بدني') {
-            currentActiveChallenge = { id: ch.id, points: ch.points };
-            document.getElementById('sTitle').innerText = ch.title;
-            document.getElementById('sDesc').innerText = ch.desc;
-            document.getElementById('sportModal').style.display = 'flex';
-        } else if (ch.type === 'أعصاب') {
-            startNervesModal(ch);
-        } else {
-            showQuestion(ch);
-        }
-    }
-
-    // ==========================================
-    // نظام الإعلانات (للمضاعفة أو إعادة المحاولة)
-    // ==========================================
-    function openAdModalWithCheck(tracker, requiredAds) {
-        if (!navigator.onLine) {
-            alert("تنبيه: لا يوجد اتصال بالإنترنت. هذه العملية تتطلب اتصالاً بالشبكة.");
-            return;
-        }
-        
-        document.getElementById('adRequired').innerText = requiredAds;
-        document.getElementById('adCurrent').innerText = tracker.count || 0;
-        
-        let btn = document.getElementById('btnExecuteAd');
-        if (adCheckInterval) { clearInterval(adCheckInterval); adCheckInterval = null; }
-        
-        btn.disabled = false;
-        btn.innerHTML = `${getIcon('play')} تنفيذ الأوامر`;
-        document.getElementById('adDesc').innerText = `يتطلب هذا الإجراء التوجه لقسم الإعلانات ${requiredAds} مرة/مرات.`;
-        
-        document.getElementById('adModal').style.display = 'flex';
-    }
-
-    window.executeAdVisit = function() {
-        let btn = document.getElementById('btnExecuteAd');
-        if (btn.disabled || !navigator.onLine) return; 
-
-        window.location.href = "go:557"; 
-        btn.disabled = true;
-        let checkTime = 10; 
-        btn.innerHTML = `<span class="icon-holder">${getIcon('stopwatch')}</span> جاري التحقق (${checkTime}ث)...`;
-
-        if (adCheckInterval) clearInterval(adCheckInterval);
-
-        adCheckInterval = setInterval(() => {
-            checkTime--;
-            if (checkTime > 0) {
-                btn.innerHTML = `<span class="icon-holder">${getIcon('stopwatch')}</span> جاري التحقق (${checkTime}ث)...`;
-            } else {
-                clearInterval(adCheckInterval);
-                adCheckInterval = null;
-                
-                let tracker, requiredAds;
-                if (currentActiveChallenge.flow === 'doublePoints') {
-                    tracker = daily.doublePointsState;
-                    requiredAds = 2;
-                } else if (currentActiveChallenge.flow === 'retry') {
-                    tracker = daily.adProgress[currentActiveChallenge.id];
-                    requiredAds = 1;
-                }
-
-                tracker.count = (tracker.count || 0) + 1;
-                tracker.lastTime = Date.now();
-                localStorage.setItem('militaryDaily_local', JSON.stringify(daily));
-                document.getElementById('adCurrent').innerText = tracker.count;
-
-                if (tracker.count >= requiredAds) {
-                    document.getElementById('adModal').style.display = 'none';
-                    if (currentActiveChallenge.flow === 'doublePoints') {
-                        alert('أحسنت أيها البطل! تمت مضاعفة نقاطك بنجاح.');
-                        finishChallengeFinal(daily.doublePointsState.id, daily.doublePointsState.basePoints * 2);
-                        daily.doublePointsState = { active: false, id: null, basePoints: 0, count: 0, lastTime: 0 };
-                        localStorage.setItem('militaryDaily_local', JSON.stringify(daily));
-                    } else if (currentActiveChallenge.flow === 'retry') {
-                        tracker.needsRetry = false;
-                        tracker.count = 0;
-                        localStorage.setItem('militaryDaily_local', JSON.stringify(daily));
-                        showChallengeContent(currentActiveChallenge.id);
-                    }
+                if (ch.type === 'بدني') {
+                    actionBtnHtml = `<button class="btn btn-accent" onclick="openSport(${idx})">${getIcon('play')} ابدأ التمرين الآن</button>`;
+                } else if (ch.type === 'أعصاب') {
+                    actionBtnHtml = `<button class="btn btn-accent" onclick="openNerves(${idx})">${getIcon('play')} دخول الميدان الإلكتروني</button>`;
                 } else {
-                    btn.disabled = false;
-                    btn.innerHTML = `${getIcon('play')} تنفيذ الزيارة التالية`;
+                    // الأزرار المخصصة للمهام الفكرية والأسئلة الشفرية
+                    if (ch.status === 'retry') {
+                        // تعديل لون وتصميم زر إعادة التحدي عند انقطاع الإنترنت أو الفشل
+                        let btnStyle = "background-color: #d35400;"; // برتقالي افتراضي للمحاولة
+                        let btnClass = "btn";
+                        let btnText = `${getIcon('play')} إعادة المحاولة العسكرية`;
+                        
+                        if(!navigator.onLine) {
+                            btnClass += " offline-ribbon";
+                            btnText = `لا يوجد إنترنت لإعادة المحاولة`;
+                        }
+                        actionBtnHtml = `<button class="${btnClass}" style="${btnStyle}" onclick="openQuiz(${idx})">${btnText}</button>`;
+                    } else {
+                        actionBtnHtml = `<button class="btn btn-accent" onclick="openQuiz(${idx})">${getIcon('play')} بدء الاختبار التكتيكي</button>`;
+                    }
                 }
             }
-        }, 1000);
-    };
 
-    // ==========================================
-    // نظام الجوائز والتحقق
-    // ==========================================
-    function triggerRewardPhase(id, points) {
-        pendingReward = { id: id, basePoints: points };
-        document.getElementById('rewardPoints').innerText = points;
-        document.getElementById('rewardModal').style.display = 'flex';
-        updateConnStatus(); // لتحديث ظهور زر الإعلان
-    }
-
-    window.claimNormalPoints = function() {
-        document.getElementById('rewardModal').style.display = 'none';
-        if(daily.doublePointsState) {
-            daily.doublePointsState = { active: false, id: null, basePoints: 0, count: 0, lastTime: 0 };
-            localStorage.setItem('militaryDaily_local', JSON.stringify(daily));
-        }
-        finishChallengeFinal(pendingReward.id, pendingReward.basePoints);
-    }
-
-    window.startDoublePointsFlow = function() {
-        if (!navigator.onLine) { alert("المضاعفة تتطلب إنترنت"); return; }
-        if (!daily.doublePointsState) daily.doublePointsState = { active: false, count: 0, lastTime: 0 };
-        daily.doublePointsState.active = true;
-        daily.doublePointsState.id = pendingReward.id;
-        daily.doublePointsState.basePoints = pendingReward.basePoints;
-        localStorage.setItem('militaryDaily_local', JSON.stringify(daily));
-        
-        currentActiveChallenge = { id: pendingReward.id, flow: 'doublePoints' };
-        document.getElementById('rewardModal').style.display = 'none';
-        openAdModalWithCheck(daily.doublePointsState, 2);
-    }
-
-    function finishChallengeFinal(id, finalPoints) {
-        daily.completedToday.push(id);
-        userObj.points += finalPoints;
-        
-        if(!userObj.completedAllTime) userObj.completedAllTime = [];
-        userObj.completedAllTime.push(id); 
-        
-        saveUserDataLocally();
-        localStorage.setItem('militaryDaily_local', JSON.stringify(daily));
-        
-        updateUI();
-        renderChallenges();
-    }
-
-    window.confirmSportChallenge = function() {
-        document.getElementById('sportModal').style.display = 'none';
-        triggerRewardPhase(currentActiveChallenge.id, currentActiveChallenge.points);
-    };
-
-    function showQuestion(ch) {
-        document.getElementById('qText').innerHTML = ch.q; 
-        let grid = document.getElementById('qOptions');
-        grid.innerHTML = '';
-        
-        ch.options.forEach((opt, idx) => {
-            let btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.innerHTML = opt; 
-            btn.onclick = () => checkAnswer(ch.id, idx, ch.ans, ch.points);
-            grid.appendChild(btn);
+            container.innerHTML += `
+                <div class="${cardClass}">
+                    <div class="challenge-header">
+                        <span class="tag">${getIcon(ch.icon || 'star')} ميدان ${ch.type}</span>
+                        <span style="font-weight:900; color:var(--accent); font-size:12px;">+${ch.points} نقطة</span>
+                    </div>
+                    <h3 style="margin:5px 0; font-size:15px; color:#fff;">${ch.title}</h3>
+                    <p style="margin:0 0 10px 0; font-size:12px; color:var(--text-muted); line-height:1.5;">${ch.q || ch.desc}</p>
+                    ${actionBtnHtml}
+                </div>
+            `;
         });
-        document.getElementById('questionModal').style.display = 'flex';
     }
 
-    function checkAnswer(id, selected, correct, points) {
-        document.getElementById('questionModal').style.display = 'none';
-        if (selected === correct) {
-            triggerRewardPhase(id, points);
+    // ==========================================
+    // 3. إدارة النوافذ المنبثقة وتشغيل الألعاب
+    // ==========================================
+    let activeIndex = null;
+    let nervesInterval = null;
+    let nervesTimeLeft = 0;
+    let nervesClickCount = 0;
+    let currentChPoints = 0;
+
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    // الميدان البدني
+    function openSport(idx) {
+        activeIndex = idx;
+        let ch = dailyChallenges[idx];
+        document.getElementById('sTitle').innerText = ch.title;
+        document.getElementById('sDesc').innerText = ch.desc;
+        openModal('sportModal');
+    }
+    function confirmSportChallenge() {
+        closeModal('sportModal');
+        triggerRewardFlow(dailyChallenges[activeIndex].points);
+    }
+
+    // الميدان الفكري والشفرات
+    function openQuiz(idx) {
+        activeIndex = idx;
+        let ch = dailyChallenges[idx];
+        document.getElementById('qText').innerHTML = ch.q;
+        
+        const optGrid = document.getElementById('qOptions');
+        optGrid.innerHTML = '';
+        
+        ch.options.forEach((opt, oIdx) => {
+            optGrid.innerHTML += `<button class="option-btn" onclick="submitAnswer(${oIdx})">${oIdx + 1}. ${opt}</button>`;
+        });
+        openModal('questionModal');
+    }
+
+    function submitAnswer(chosenIdx) {
+        closeModal('questionModal');
+        let ch = dailyChallenges[activeIndex];
+        if (chosenIdx === ch.ans) {
+            triggerRewardFlow(ch.points);
         } else {
-            alert('إجابة خاطئة! تم قفل المهمة كعقاب. يمكنك إعادة المحاولة بمشاهدة إعلان عسكري.');
-            if(!daily.adProgress[id]) daily.adProgress[id] = { count: 0, lastTime: 0 };
-            daily.adProgress[id].needsRetry = true;
-            localStorage.setItem('militaryDaily_local', JSON.stringify(daily));
+            ch.status = 'retry';
+            localStorage.setItem('field_challenges', JSON.stringify(dailyChallenges));
             renderChallenges();
+            // استخدام التنبيه العسكري الشيك بدلاً من الـ alert المزعجة
+            showMilitaryAlert("إجابة خاطئة!", "رصدت أنظمة الكفاءة إجابة غير صحيحة. تم تصنيف البطاقة كـ (بحاجة لإعادة محاولة). راجع معلوماتك وحاول مجدداً أيها المقاتل!", false);
         }
     }
 
-    function startNervesModal(ch) {
-        currentActiveChallenge = ch;
-        nActive = false; nClicksCount = 0; nTimeLeft = ch.time;
+    // ميدان اختبار الأعصاب والسرعة
+    function openNerves(idx) {
+        activeIndex = idx;
+        let ch = dailyChallenges[idx];
         document.getElementById('nTitle').innerText = ch.title;
         document.getElementById('nDesc').innerText = ch.desc;
-        document.getElementById('nClicks').innerText = "0";
-        document.getElementById('nTimer').innerText = nTimeLeft;
-        document.getElementById('nervesModal').style.display = 'flex';
+        
+        nervesTimeLeft = ch.time;
+        nervesClickCount = 0;
+        document.getElementById('nClicks').innerText = '0';
+        document.getElementById('nTimer').innerText = nervesTimeLeft;
+        
+        if(nervesInterval) clearInterval(nervesInterval);
+        nervesInterval = null;
+        
+        openModal('nervesModal');
     }
 
-    window.tapNerves = function() {
-        if (!nActive) {
-            nActive = true;
-            nInterval = setInterval(() => {
-                nTimeLeft--;
-                document.getElementById('nTimer').innerText = nTimeLeft;
-                if (nTimeLeft <= 0) {
-                    clearInterval(nInterval);
-                    nActive = false;
+    function tapNerves() {
+        let ch = dailyChallenges[activeIndex];
+        if (nervesClickCount === 0 && !nervesInterval) {
+            nervesInterval = setInterval(() => {
+                nervesTimeLeft--;
+                document.getElementById('nTimer').innerText = nervesTimeLeft;
+                if (nervesTimeLeft <= 0) {
+                    clearInterval(nervesInterval);
+                    nervesInterval = null;
                     checkNervesResult();
                 }
             }, 1000);
         }
-        if (nTimeLeft > 0) {
-            nClicksCount++;
-            document.getElementById('nClicks').innerText = nClicksCount;
+        
+        if (nervesTimeLeft > 0) {
+            nervesClickCount++;
+            document.getElementById('nClicks').innerText = nervesClickCount;
         }
-    };
+    }
 
     function checkNervesResult() {
-        document.getElementById('nervesModal').style.display = 'none';
-        if (nClicksCount >= currentActiveChallenge.target) {
-            triggerRewardPhase(currentActiveChallenge.id, currentActiveChallenge.points);
+        closeModal('nervesModal');
+        let ch = dailyChallenges[activeIndex];
+        if (nervesClickCount >= ch.target) {
+            triggerRewardFlow(ch.points);
         } else {
-            alert(`للأسف! وصلت لـ ${nClicksCount} نقرة فقط. تم قفل المهمة كعقاب، جرب إعادة المحاولة.`);
-            if(!daily.adProgress[currentActiveChallenge.id]) daily.adProgress[currentActiveChallenge.id] = { count: 0, lastTime: 0 };
-            daily.adProgress[currentActiveChallenge.id].needsRetry = true;
-            localStorage.setItem('militaryDaily_local', JSON.stringify(daily));
+            ch.status = 'retry';
+            localStorage.setItem('field_challenges', JSON.stringify(dailyChallenges));
             renderChallenges();
+            showMilitaryAlert("فشل التحدي العصبى", `لقد قمت بنقر ${nervesClickCount} نقرة فقط من أصل ${ch.target} مطلوبة في غضون الوقت المحدد. ركز جيداً في المحاولات القادمة!`, false);
         }
     }
 
-    window.closeNervesModal = function() {
-        clearInterval(nInterval); nActive = false;
-        document.getElementById('nervesModal').style.display = 'none';
-    };
-
-    function updateTimer() {
-        const now = new Date();
-        const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-        const diff = tomorrow - now;
-        
-        const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const s = Math.floor((diff % (1000 * 60)) / 1000);
-        
-        const el = document.getElementById('countdownTimer');
-        if(el) el.innerText = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-        
-        if(h === 0 && m === 0 && s === 0) setTimeout(initDailyChallenges, 2000);
+    function closeNervesModal() {
+        if(nervesInterval) clearInterval(nervesInterval);
+        nervesInterval = null;
+        closeModal('nervesModal');
     }
-    setInterval(updateTimer, 1000);
-    updateTimer();
 
-    window.switchTab = function(tab) {
-        document.getElementById('profilePage').classList.remove('active');
-        document.getElementById('challengesPage').classList.remove('active');
-        document.getElementById('navProfile').classList.remove('active');
-        document.getElementById('navChallenges').classList.remove('active');
+    // ==========================================
+    // 4. نظام النقاط، المكافآت والمضاعفة بالإنترنت
+    // ==========================================
+    let adVisitsCount = 0;
+    let requiredAds = 1;
+
+    function triggerRewardFlow(pts) {
+        currentChPoints = pts;
+        document.getElementById('rewardPoints').innerText = pts;
+        updateConnStatus(); // التحقق اللحظي قبل عرض خيارات الاستلام
+        openModal('rewardModal');
+    }
+
+    function claimNormalPoints() {
+        userObj.points += currentChPoints;
+        finalizeChallengeSuccess();
+    }
+
+    function startDoublePointsFlow() {
+        if(!navigator.onLine) {
+            showMilitaryAlert("لا يوجد اتصال بالإنترنت", "المضاعفة الإعلانية تتطلب اتصالاً فعالاً بخوادم القيادة.", false);
+            return;
+        }
+        closeModal('rewardModal');
+        adVisitsCount = 0;
+        requiredAds = 2; // إعلانين حسب الأصول البرمجية الأصلية للمضاعفة
+        document.getElementById('adCurrent').innerText = '0';
+        document.getElementById('adRequired').innerText = requiredAds;
+        openModal('adModal');
+    }
+
+    function executeAdVisit() {
+        adVisitsCount++;
+        document.getElementById('adCurrent').innerText = adVisitsCount;
         
-        if(tab === 'profile') {
-            document.getElementById('profilePage').classList.add('active');
-            document.getElementById('navProfile').classList.add('active');
+        if (adVisitsCount >= requiredAds) {
+            setTimeout(() => {
+                closeModal('adModal');
+                userObj.points += (currentChPoints * 2);
+                finalizeChallengeSuccess(true);
+            }, 500);
         } else {
+            showMilitaryAlert("إشعار الإعلانات", "أحسنت، انتقل لتنفيذ الإعلان التالي لإكمال متطلبات الأمر التكتيكي.", true);
+        }
+    }
+
+    function finalizeChallengeSuccess(isDoubled = false) {
+        closeModal('rewardModal');
+        
+        let ch = dailyChallenges[activeIndex];
+        ch.status = 'success';
+        if (!userObj.completedAllTime.includes(ch.id)) {
+            userObj.completedAllTime.push(ch.id);
+        }
+        
+        updateRankBasedOnPoints();
+        saveUserDataLocally();
+        updateUI();
+        renderChallenges();
+
+        const msg = isDoubled ? `تمت مضاعفة النقاط وحصلت على ${currentChPoints * 2} نقطة تكتيكية!` : `تم إيداع ${currentChPoints} نقطة في خزينة ملفك العسكري بنجاح.`;
+        showMilitaryAlert("مهمة ناجحة!", msg, true);
+    }
+
+    // ==========================================
+    // 5. تحديث واجهات المستخدم والعداد اليومي
+    // ==========================================
+    function updateUI() {
+        document.getElementById('userPoints').innerText = userObj.points;
+        document.getElementById('userRank').innerText = userObj.rank;
+        renderBadgesList();
+    }
+
+    function renderBadgesList() {
+        const grid = document.getElementById('userBadges');
+        grid.innerHTML = '';
+
+        APP_BADGES.forEach(badge => {
+            let isLocked = userObj.points < badge.minPoints;
+            let itemClass = "badge-item";
+            if (isLocked) itemClass += " locked";
+
+            grid.innerHTML += `
+                <div class="${itemClass}">
+                    <div class="icon-holder">${getIcon(badge.icon)}</div>
+                    <div class="b-title">${badge.title}</div>
+                    <div class="b-req">${badge.req}</div>
+                </div>
+            `;
+        });
+    }
+
+    function switchTab(tab) {
+        document.getElementById('challengesPage').classList.remove('active');
+        document.getElementById('profilePage').classList.remove('active');
+        document.getElementById('navChallenges').classList.remove('active');
+        document.getElementById('navProfile').classList.remove('active');
+
+        if (tab === 'challenges') {
             document.getElementById('challengesPage').classList.add('active');
             document.getElementById('navChallenges').classList.add('active');
+        } else {
+            document.getElementById('profilePage').classList.add('active');
+            document.getElementById('navProfile').classList.add('active');
+            updateUI();
         }
-    };
+    }
 
-    window.closeModal = function(id) { 
-        document.getElementById(id).style.display = 'none'; 
-        if(id === 'adModal') {
-            if(adCheckInterval) {
-                clearInterval(adCheckInterval);
-                adCheckInterval = null;
-            }
-            if(currentActiveChallenge && currentActiveChallenge.flow === 'doublePoints') {
-                document.getElementById('rewardModal').style.display = 'flex';
-            }
+    function startTimer() {
+        function tick() {
+            const now = new Date();
+            const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+            const diff = tomorrow - now;
+
+            const hrs = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, '0');
+            const mins = String(Math.floor((diff / 1000 / 60) % 60)).padStart(2, '0');
+            const secs = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
+
+            document.getElementById('countdownTimer').innerText = `${hrs}:${mins}:${secs}`;
         }
-    };
+        tick();
+        setInterval(tick, 1000);
+    }
 </script>
 </body>
 </html>
